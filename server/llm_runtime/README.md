@@ -26,6 +26,11 @@ uvicorn server.llm_runtime.app:app --host 0.0.0.0 --port 7001
 | `POST /models/{name}/lora` | 触发 LoRA 训练 job，返回 job_id + status。|
 | `GET /metrics` | 输出计数指标，便于 Prometheus 抓取。|
 
+## 外部模型代理
+- 通过环境变量 `EXTERNAL_LLM_ENDPOINT` + `EXTERNAL_LLM_API_KEY` 指定第三方模型服务地址（例如 `https://free.v36.cm`）。
+- 若配置了 `EXTERNAL_LLM_ENDPOINT`，completion/chat 请求将先尝试转发到该地址，返回值若符合 OpenAI schema 将直接透传；否则继续使用本地 stub。
+- 建议将 API Key 保存在 `.env`（项目根）或 CI secret 中，并列入 `.gitignore` 以防泄露。我们通过 `pydantic.BaseSettings` 加载这些变量，方便在不同环境（开发/CI/生产）切换。
+
 ## 下一步
 - 连接真实 vLLM / HuggingFace 模型，替换 `_build_choice` 逻辑。
 - 将 LoRA job 与训练 pipeline（PEFT + dataset）对接。
