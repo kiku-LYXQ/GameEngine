@@ -13,7 +13,7 @@ public class AI_Copilot : ModuleRules
             "InputCore",
             "Slate",
             "SlateCore",
-            "Http",
+            "HTTP",
             "Json",
             "JsonUtilities"
         });
