@@ -26,3 +26,24 @@ Validation scripts completed.
 4. Confirm LLM metrics {"evaluation.requests": 1}
 NPC validation complete.
 ```
+
+## validate_copilot.sh output (Round R3)
+```
+1. Check agent capabilities
+{ ... } // trimmed for brevity
+2. Fire simple agent task
+3. Poll task status (Attempt 1 status=done)
+4. Fetch task logs {...}
+5. Trigger Copilot payload {...}
+6. Check LLM runtime metrics {}
+Validation scripts completed.
+```
+
+## validate_npc.sh output (Round R3)
+```
+1. Run NPC task
+2. Fetch NPC logs {...}
+3. Evaluate NPC dialogue model {"model": "npc-dialogue-7b", "score": 0.82, "details": {...}}
+4. Confirm LLM metrics {"evaluation.requests": 1}
+NPC validation complete.
+```
