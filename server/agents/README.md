@@ -16,9 +16,11 @@
 - Redis + PostgreSQL 用于状态与审计日志
 - OpenTelemetry for tracing
 
-## 接口
-- `/agents/plan`（POST）：输入 prompt + project_context，返回 task plan
-- `/agents/execute`（POST）：执行指定 agent 并返还 artifact
+## FastAPI 骨架
+- `server/agents/app.py`：提供 `/agents/task`, `/agents/status/{task_id}`, `/agents/feedback/{task_id}` 接口。
+- `server/agents/context.py`：简单 ContextStore，记录状态与审计日志。
+- `server/agents/models.py`：定义 Agent contract + Task Result/Status schema。
+- `server/agents/agents/*`：Planner/Code/Asset/Doc Agent stub，可直接拓展为真实逻辑。
 
 ## 下一步
 - 定义 Agent contract（inputs/outputs）

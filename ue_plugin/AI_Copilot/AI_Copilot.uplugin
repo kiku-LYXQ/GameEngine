@@ -1,0 +1,21 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "0.1",
+  "FriendlyName": "AI Copilot",
+  "Description": "AI GameDev Copilot embedded inside Unreal Editor.",
+  "Category": "AI",
+  "CreatedBy": "GameDev AI Platform",
+  "CreatedByURL": "https://github.com/kiku-LYXQ/GameEngine",
+  "DocsURL": "",
+  "MarketplaceURL": "",
+  "SupportURL": "",
+  "EnabledByDefault": true,
+  "Modules": [
+    {
+      "Name": "AI_Copilot",
+      "Type": "Editor",
+      "LoadingPhase": "Default"
+    }
+  ]
+}

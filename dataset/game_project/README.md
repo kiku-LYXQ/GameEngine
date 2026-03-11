@@ -14,6 +14,10 @@
 - Embedding（BGE/text2vec），同时记录 `metadata`（`path`, `entity_type`, `tags`, `line_range`, `hash`）
 - 存储至 Milvus/FAISS，便于后续 RAG 检索
 
+## 数据脚本
+- `scripts/collect_assets.py`：遍历项目目录，生成 manifest.json（path/size/timestamp），作为采集阶段快照。
+- `scripts/chunk_pipe.py`：对 Markdown 文档进行 chunk 切片并生成 placeholder embedding + metadata，可直接向 Vector Store 写入。
+
 ## 预留内容
-- 提供 `scripts/` 目录做数据采集 + Embedding pipeline
 - 增加 `game_project/sample_data/` 作为灰度测试样本
+- future: Blueprint parser、asset metadata extractor
