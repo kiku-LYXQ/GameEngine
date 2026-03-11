@@ -2,15 +2,15 @@
 #include "AI_CopilotCommands.h"
 #include "CopilotPanel.h"
 
-#include "EditorStyleSet.h"
-#include "Framework/Docking/TabManager.h"
 #include "Framework/Commands/UIAction.h"
+#include "Framework/Docking/TabManager.h"
 #include "LevelEditor.h"
 #include "ToolMenus.h"
 #include "ToolMenuEntry.h"
 #include "ToolMenuOwnerScoped.h"
 #include "WorkspaceMenuStructureModule.h"
 #include "Widgets/Docking/SDockTab.h"
+#include "Styling/AppStyle.h"
 #include "Styling/SlateIcon.h"
 
 #define LOCTEXT_NAMESPACE "FAI_CopilotModule"
@@ -35,10 +35,7 @@ void FAI_CopilotModule::ShutdownModule()
 {
     UToolMenus::UnregisterOwner(this);
 
-    if (FGlobalTabmanager::Get())
-    {
-        FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(AI_CopilotTabName);
-    }
+    FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(AI_CopilotTabName);
 
     FAICopilotCommands::Unregister();
     PluginCommands.Reset();
@@ -46,15 +43,12 @@ void FAI_CopilotModule::ShutdownModule()
 
 void FAI_CopilotModule::RegisterTabSpawner()
 {
-    if (!FGlobalTabmanager::Get())
-    {
-        return;
-    }
-
-    FGlobalTabmanager::Get()->RegisterNomadTabSpawner(AI_CopilotTabName, FOnSpawnTab::CreateRaw(this, &FAI_CopilotModule::SpawnCopilotTab))
+    FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
+        AI_CopilotTabName,
+        FOnSpawnTab::CreateRaw(this, &FAI_CopilotModule::SpawnCopilotTab))
         .SetDisplayName(LOCTEXT("AICopilotTabTitle", "AI Copilot"))
         .SetTooltipText(LOCTEXT("AICopilotTabTooltip", "Open the AI Copilot workspace"))
-        .SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.GameSettings"))
+        .SetIcon(FSlateIcon(FAppStyle::GetAppStyleSetName(), "LevelEditor.GameSettings"))
         .SetGroup(WorkspaceMenu::GetMenuStructure().GetToolsCategory());
 }
 
@@ -74,7 +68,7 @@ void FAI_CopilotModule::RegisterMenus()
             "AI_Copilot_Main",
             LOCTEXT("AICopilotMenuLabel", "AI Copilot"),
             LOCTEXT("AICopilotMenuTooltip", "Open the AI Copilot panel."),
-            FSlateIcon(),
+            FSlateIcon(FAppStyle::GetAppStyleSetName(), "LevelEditor.GameSettings"),
             FUIAction(FExecuteAction::CreateRaw(this, &FAI_CopilotModule::OpenCopilotTab)));
     }
 
@@ -82,11 +76,11 @@ void FAI_CopilotModule::RegisterMenus()
     {
         FToolMenuSection& ToolbarSection = ToolbarMenu->FindOrAddSection("AI_Copilot");
         ToolbarSection.AddEntry(FToolMenuEntry::InitToolBarButton(
+            "AI_Copilot_Open",
             FUIAction(FExecuteAction::CreateRaw(this, &FAI_CopilotModule::OpenCopilotTab)),
-            NAME_None,
             LOCTEXT("AICopilotToolbarLabel", "AI Copilot"),
             LOCTEXT("AICopilotToolbarTooltip", "Open the AI Copilot panel."),
-            FSlateIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.GameSettings")));
+            FSlateIcon(FAppStyle::GetAppStyleSetName(), "LevelEditor.GameSettings")));
     }
 }
 
@@ -102,10 +96,7 @@ TSharedRef<SDockTab> FAI_CopilotModule::SpawnCopilotTab(const FSpawnTabArgs& Spa
 
 void FAI_CopilotModule::OpenCopilotTab()
 {
-    if (FGlobalTabmanager::Get())
-    {
-        FGlobalTabmanager::Get()->TryInvokeTab(AI_CopilotTabName);
-    }
+    FGlobalTabmanager::Get()->TryInvokeTab(AI_CopilotTabName);
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -2,10 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
-#include "Framework/Commands/UICommandList.h"
 
-class FSpawnTabArgs;
+class FUICommandList;
 class SDockTab;
+class FSpawnTabArgs;
 
 class FAI_CopilotModule : public IModuleInterface
 {
@@ -14,10 +14,11 @@ public:
     virtual void ShutdownModule() override;
 
 private:
-    void RegisterMenus();
     void RegisterTabSpawner();
-    TSharedRef<SDockTab> SpawnCopilotTab(const FSpawnTabArgs& SpawnTabArgs);
+    void RegisterMenus();
     void OpenCopilotTab();
+
+    TSharedRef<SDockTab> SpawnCopilotTab(const FSpawnTabArgs& SpawnTabArgs);
 
 private:
     TSharedPtr<FUICommandList> PluginCommands;
