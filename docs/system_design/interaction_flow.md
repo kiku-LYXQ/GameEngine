@@ -36,6 +36,7 @@
 ## 3. Monitoring & Observability
 - **RAG Query Latency**：记录 `/rag/query` 响应时间；超过 `500ms` 触发 alert。
 - **Agent Success Ratio**：定期运行 smoke test（`server/agents/smoke_test.py`），计算 `done` vs `failed`；报警 threshold < 90%。
+- **Agent Capability Dashboard**：`/agents/capabilities` 提供 Planner/Code/Asset/Doc 的 success_rate, avg_latency_ms, avg_tokens；由 UE 插件或运营 dashboard 拉取，帮助前端展示预计耗时与 token 预算即可。`/agents/logs/{task_id}` 提供每个 step 的 log/result string，便于后续调试。
 - **LLM Token Usage**：`metrics_store` 中 `completions.responses` / `chat.responses` 可视化，外部 proxy 增加 `external.failed` counter。
 - **LoRA Training Jobs**：`/models/{name}/lora` 触发后 `metrics_store` 记录 `lora.jobs_started`，可追踪 `LoRA job duration`。
 - **External Proxy Health**：若 `_forward_to_external` 返回 `None`，会在 log 中产生日志 `External LLM request failed`，并记录 `external.failed` counter（后续可扩展）。

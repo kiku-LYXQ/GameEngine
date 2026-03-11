@@ -67,6 +67,12 @@ POST /api/copilot/asset-search
 - HTTP 超时或状态码非 200 时，重复请求 2 次（exponential backoff），如果仍失败则提示“AI 服务暂不可用”。
 - 插件在 `GameDevAI/CopilotLogs` 写入 `prompt_hash`, `response_hash`, `latency_ms`，并允许开发者通过设置关闭 telemetry。
 
+## 模板与资源卡片
+- Copilot Panel 提供预置模板（Sprint Ability、Dialogue Event 等），点选模板可以自动注入参数与 context，并展示推荐资源路径（Blueprint、VFX、音效）。
+- Panel 允许将 chunk_id（由 Agent 的 RAG responses 返回）附加在请求头中，后续 prompt 会自动 carry chunk 的 metadata，便于 follow-up question 与 chunk-based explanations。
+- `FCopilotHttpClient` 通过 headers 传递 `X-Copilot-Chunk`, `X-Copilot-Request-Id`, `X-Copilot-Metadata`，可在后端 Agent/LLM logs 中追踪用户行为。
+- 点击资源卡片会直接将路径填入 Copilot prompt input，或触发 `Content Browser` 的 `SyncBrowserToAssets`（未来可实现），让开发者快速 jump to asset。
+
 ## 交互流程建议
 1. 从 Toolbar 打开 Copilot Panel，输入 prompt 并选择模块。
 2. 模块在本地构造 `context`（selected actor/blueprint paths）并调用 `/api/copilot/generate`。

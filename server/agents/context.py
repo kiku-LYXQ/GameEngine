@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Dict, List
 from uuid import uuid4
 
-from .models import AgentStatusResponse, AgentStatus
+from .models import AgentStatus, AgentStatusResponse, TaskLogsResponse
 
 
 @dataclass
@@ -35,11 +35,19 @@ class ContextStore:
             record.logs.append(log)
         return record
 
-    def get(self, task_id: str) -> AgentStatusResponse:
+    def _get_record(self, task_id: str) -> TaskRecord:
         record = self._store.get(task_id)
         if not record:
             raise KeyError(task_id)
+        return record
+
+    def get(self, task_id: str) -> AgentStatusResponse:
+        record = self._get_record(task_id)
         return AgentStatusResponse(task_id=record.task_id, status=record.status, logs=list(record.logs))
+
+    def logs(self, task_id: str) -> TaskLogsResponse:
+        record = self._get_record(task_id)
+        return TaskLogsResponse(task_id=record.task_id, logs=list(record.logs))
 
 
 task_context_store = ContextStore()

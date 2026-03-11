@@ -11,15 +11,49 @@ from .agents.doc import create_documentation
 from .agents.planner import plan_from_prompt
 from .context import task_context_store
 from .models import (
+    AgentCapability,
+    AgentCapabilitiesResponse,
     AgentStatus,
     AgentStatusResponse,
     AgentTaskRequest,
     AgentTaskResult,
     AgentTaskStep,
+    TaskLogsResponse,
 )
 
 logger = logging.getLogger("server.agents")
 app = FastAPI(title="AI GameDev Agent Orchestrator")
+
+CAPABILITIES = [
+    AgentCapability(
+        name="Planner",
+        description="Analyzes prompts and fetches project context.",
+        success_rate=0.95,
+        avg_latency_ms=180,
+        avg_tokens=80,
+    ),
+    AgentCapability(
+        name="Code",
+        description="Generates C++/Blueprint artifacts with contextual scaffolds.",
+        success_rate=0.92,
+        avg_latency_ms=420,
+        avg_tokens=190,
+    ),
+    AgentCapability(
+        name="Asset",
+        description="Locates assets via Vector Asset Index + Content browser metadata.",
+        success_rate=0.9,
+        avg_latency_ms=210,
+        avg_tokens=130,
+    ),
+    AgentCapability(
+        name="Doc",
+        description="Synthesizes design docs and behavior notes.",
+        success_rate=0.98,
+        avg_latency_ms=230,
+        avg_tokens=100,
+    ),
+]
 
 
 @app.post("/agents/task", response_model=AgentTaskResult)
@@ -57,7 +91,11 @@ def _run_agents(task_id: str, steps: list[AgentTaskStep], context: Dict[str, str
                 outputs = ", ".join(find_assets(["explosion", "player"]))
             else:
                 outputs = create_documentation(step)
-            task_context_store.update_task(task_id, status=AgentStatus.running, log=f"{step.name} done")
+            task_context_store.update_task(
+                task_id,
+                status=AgentStatus.running,
+                log=f"{step.name} done: {outputs}",
+            )
         task_context_store.update_task(task_id, status=AgentStatus.done, log="Task completed")
     except Exception as exc:
         logger.exception("Agent task failed")
@@ -68,6 +106,19 @@ def _run_agents(task_id: str, steps: list[AgentTaskStep], context: Dict[str, str
 def task_status(task_id: str) -> AgentStatusResponse:
     try:
         return task_context_store.get(task_id)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+
+@app.get("/agents/capabilities", response_model=AgentCapabilitiesResponse)
+def get_capabilities() -> AgentCapabilitiesResponse:
+    return AgentCapabilitiesResponse(capabilities=CAPABILITIES)
+
+
+@app.get("/agents/logs/{task_id}", response_model=TaskLogsResponse)
+def task_logs(task_id: str) -> TaskLogsResponse:
+    try:
+        return task_context_store.logs(task_id)
     except KeyError:
         raise HTTPException(status_code=404, detail="Task not found")
 

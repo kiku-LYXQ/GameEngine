@@ -14,10 +14,16 @@ class AgentStatus(str, Enum):
     failed = "failed"
 
 
+class CostEstimate(BaseModel):
+    tokens: int
+    latency_ms: int
+
+
 class AgentTaskStep(BaseModel):
     name: str
     description: str
     dependencies: List[str] = []
+    cost_estimate: Optional[CostEstimate]
 
 
 class AgentTaskRequest(BaseModel):
@@ -37,4 +43,21 @@ class AgentTaskResult(BaseModel):
 class AgentStatusResponse(BaseModel):
     task_id: str
     status: AgentStatus
+    logs: List[str]
+
+
+class AgentCapability(BaseModel):
+    name: str
+    description: str
+    success_rate: float
+    avg_latency_ms: int
+    avg_tokens: int
+
+
+class AgentCapabilitiesResponse(BaseModel):
+    capabilities: List[AgentCapability]
+
+
+class TaskLogsResponse(BaseModel):
+    task_id: str
     logs: List[str]
