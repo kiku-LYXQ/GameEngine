@@ -12,5 +12,10 @@ public:
     void Construct(const FArguments& InArgs);
 
 private:
+    void RequestCapabilities() const;
     FReply OnSendPromptClicked() const;
+    FReply OnResourceCardClicked(FString ChunkPath, FString ChunkId);
+
+private:
+    FString SelectedChunkId;
 };

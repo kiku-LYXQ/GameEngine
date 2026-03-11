@@ -75,10 +75,12 @@ POST /api/copilot/asset-search
 
 ## 交互流程建议
 1. 从 Toolbar 打开 Copilot Panel，输入 prompt 并选择模块。
-2. 模块在本地构造 `context`（selected actor/blueprint paths）并调用 `/api/copilot/generate`。
-3. 服务返回时，自动创建/打开文件或 focus 资源，并把 agent result push 至 `CopilotLogs`。
-4. 若响应中包含 `chunk_id`，下一个 prompt 可以作为 follow-up 直接引用。
+2. Panel 初始化时调用 `/agents/capabilities`，将 success rate / avg latency 展示在 UI，帮助开发者选择合适 Agent。
+3. 模块在本地构造 `context`（selected actor/blueprint paths）并调用 `/api/copilot/generate`，请求头包含 `X-Copilot-Chunk`（若选了资源卡片）与 `X-Copilot-Request-Id`，后端可据此执行 follow-up。
+4. 服务返回时，自动创建/打开文件或 focus 资源，并把 agent result push 至 `CopilotLogs`。
+5. 若响应中包含 `chunk_id`，下一个 prompt 可以作为 follow-up 直接引用。参考 `docs/system_design/copilot_agent_link.md` 了解具体 headers/methods。
 
 ## Debug 与验证
 - 使用 `FCopilotHttpClient::PostRequest` 发起 `POST /api/copilot/generate` 请求，观察是否可以成功接收到 `files`，并调用 `FAssetToolsModule::RegisterAssetTypeActions` 创建资源。
 - 可通过 `curl http://127.0.0.1:7000/api/copilot/generate` 模拟请求，确保本地 LLM Runtime + Agent 正常响应。
+- 启动服务后 `curl http://127.0.0.1:7000/agents/capabilities` 应返回 capabilities JSON，便于 UI 侧展示。">

@@ -26,7 +26,7 @@
 ## Agent Capability Dashboard
 - `GET /agents/capabilities`：返回 Planner/Code/Asset/Doc 的 success_rate、avg_latency_ms 与 avg_tokens，可直接用于 UE 插件或运维 dashboard 展示。
 - `GET /agents/logs/{task_id}`：查看指定任务的执行日志（step + outputs），便于排查失败或验证 run history。
-- Planner 生成的 `task_plan` 已附带 `cost_estimate`（tokens + latency），可用于前端展示预计耗时/Token 粒度。
+- Planner 生成的 `task_plan` 已附带 `cost_estimate`（tokens + latency），可用于前端展示预计耗时/Token 粒度。更多 Copilot ↔ Agent 的交互细节见 `docs/system_design/copilot_agent_link.md`。
 
 ## 下一步
 - 定义 Agent contract（inputs/outputs）

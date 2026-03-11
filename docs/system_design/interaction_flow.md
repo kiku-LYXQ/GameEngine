@@ -1,6 +1,7 @@
 # Interaction Flow & Monitoring
 
 ## 1. 端到端调用链
+(详见 `docs/system_design/copilot_agent_link.md` 了解 Copilot ↔ Agent 的新增交互)
 ```text
 [Unreal Editor (AI Copilot UI)] -> POST /api/copilot/generate
            ↓
