@@ -9,6 +9,19 @@
 - `scripts/validate_copilot.sh`, `scripts/validate_npc.sh`: 一键 smoke test。  
 - `docs/system_design`: 详细架构、数据流与交互说明。  
 
+## 1.5. 判断 Unreal 工程结构
+在本地目录（建议仍使用 `/home/lxy/.openclaw/workspace-architect/GameEngine`）运行：
+```
+find . -maxdepth 2 -name "*.uproject"
+find . -maxdepth 2 -type d | sort
+```
+- 如果没有 `.uproject` 且也没有 `Config/ Content/ Source/` 这样的 Unreal 工程骨架，就说明该仓库当前只有插件、后端、脚本和 docs，并不包含完整的 Unreal 工程。  
+- 解决办法：在 Unreal 编辑器中先新建一个 C++ 项目（项目名可为 GameEngine），生成 `.uproject`、`Config/`、`Content/`、`Source/`。  
+- 然后把本仓库的 `ue_plugin/`, `server/`, `scripts/`, `docs/` 内容合并到这个新建工程的目录里，避免覆盖 Unreal 自动创建的核心文件；再把 `.uproject` 所在目录作为新仓库 root 进行 Git 操作。  
+- 如果你希望直接基于本仓库继续操作，也可以在其他位置创建 `.uproject` 工程后，将文件如 `Config/`, `Content/`, `Source/`, `Plugins/` 等复制/移动到此仓库，确保 Unreal 识别该目录为工程。  
+
+之后再继续下面章节（服务启动、脚本验证、Unreal 编辑器使用）。
+
 ## 2. 启动本地服务
 1. 在 `GameEngine` 目录打开终端，运行：
    ```bash
