@@ -16,7 +16,10 @@ public class AI_Copilot : ModuleRules
             "HTTP",
             "Json",
             "JsonUtilities",
+            "ApplicationCore",
+            "Projects",
             "ToolMenus",
+            "UnrealEd",
             "LevelEditor"
         });
     }
