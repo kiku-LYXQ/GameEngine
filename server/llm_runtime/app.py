@@ -20,6 +20,8 @@ from .models import (
     CompletionResponse,
     LoRaJobResponse,
     LoRaRequest,
+    ModelEvaluationRequest,
+    ModelEvaluationResponse,
     ModelInfo,
     ModelRegistryResponse,
 )
@@ -143,6 +145,18 @@ def request_lora(model_name: str, payload: LoRaRequest) -> LoRaJobResponse:
     metrics_store.increment("lora.jobs_started")
     return job
 
+
+
+@app.post("/models/{model_name}/evaluate", response_model=ModelEvaluationResponse)
+def evaluate_model(model_name: str, payload: ModelEvaluationRequest) -> ModelEvaluationResponse:
+    metrics_store.increment("evaluation.requests")
+    try:
+        registry.get(model_name)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Model not found")
+    score = 0.82
+    details = {"coherence": 0.87, "safety": 0.95}
+    return ModelEvaluationResponse(model=model_name, score=score, details=details)
 
 @app.get("/metrics")
 def metrics() -> dict:

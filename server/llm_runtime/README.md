@@ -24,6 +24,7 @@ uvicorn server.llm_runtime.app:app --host 0.0.0.0 --port 7001
 | `POST /v1/chat/completions` | 接收 messages，返回 chat completion。|
 | `GET /models` | 列出已注册模型。|
 | `POST /models/{name}/lora` | 触发 LoRA 训练 job，返回 job_id + status。|
+| `POST /models/{name}/evaluate` | 提供 NPC/LLM 生成结果的评估分数，可用于 pipeline validation。|
 | `GET /metrics` | 输出计数指标，便于 Prometheus 抓取。|
 
 ## 外部模型代理

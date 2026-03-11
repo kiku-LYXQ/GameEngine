@@ -8,6 +8,7 @@ from fastapi import FastAPI, BackgroundTasks, HTTPException
 from .agents.asset import find_assets
 from .agents.code import execute_code_agent
 from .agents.doc import create_documentation
+from .agents.npc_agent import plan_npc_task
 from .agents.planner import plan_from_prompt
 from .context import task_context_store
 from .models import (
@@ -18,6 +19,8 @@ from .models import (
     AgentTaskRequest,
     AgentTaskResult,
     AgentTaskStep,
+    NpcTaskRequest,
+    NpcTaskResponse,
     TaskLogsResponse,
 )
 
@@ -52,6 +55,13 @@ CAPABILITIES = [
         success_rate=0.98,
         avg_latency_ms=230,
         avg_tokens=100,
+    ),
+    AgentCapability(
+        name="NPC",
+        description="Generates NPC dialogue, tasks, and behavior plans.",
+        success_rate=0.9,
+        avg_latency_ms=480,
+        avg_tokens=220,
     ),
 ]
 
@@ -121,6 +131,24 @@ def task_logs(task_id: str) -> TaskLogsResponse:
         return task_context_store.logs(task_id)
     except KeyError:
         raise HTTPException(status_code=404, detail="Task not found")
+
+
+@app.post("/agents/npc/task", response_model=NpcTaskResponse)
+def npc_task(payload: NpcTaskRequest) -> NpcTaskResponse:
+    record = task_context_store.new_task()
+    task_context_store.update_task(record.task_id, status=AgentStatus.running, log="NPC agent planning")
+    result = plan_npc_task(payload)
+    task_context_store.update_task(
+        record.task_id,
+        status=AgentStatus.done,
+        log="NPC agent completed",
+    )
+    return NpcTaskResponse(
+        task_id=record.task_id,
+        dialogue=result["dialogue"],
+        task_script=result["task_script"],
+        behavior_plan=result["behavior_plan"],
+    )
 
 
 @app.post("/agents/feedback/{task_id}")

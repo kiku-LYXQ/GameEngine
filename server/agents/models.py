@@ -61,3 +61,17 @@ class AgentCapabilitiesResponse(BaseModel):
 class TaskLogsResponse(BaseModel):
     task_id: str
     logs: List[str]
+
+
+class NpcTaskRequest(BaseModel):
+    npc_id: str
+    behavior: str
+    intent: str
+    chunk_id: Optional[str]
+
+
+class NpcTaskResponse(BaseModel):
+    task_id: str
+    dialogue: List[str]
+    task_script: str
+    behavior_plan: Dict[str, str]

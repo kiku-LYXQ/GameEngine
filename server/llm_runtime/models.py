@@ -76,3 +76,14 @@ class LoRaJobResponse(BaseModel):
 
 class ModelRegistryResponse(BaseModel):
     models: List[ModelInfo]
+
+
+class ModelEvaluationRequest(BaseModel):
+    prompt: str
+    expected: Optional[str]
+
+
+class ModelEvaluationResponse(BaseModel):
+    model: str
+    score: float
+    details: Dict[str, float]
