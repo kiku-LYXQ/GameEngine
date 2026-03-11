@@ -11,6 +11,7 @@
 #include "Misc/Guid.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "Serialization/JsonWriter.h"
 #include "Styling/CoreStyle.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/SBoxPanel.h"
@@ -104,10 +105,8 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
 
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 6)
                 [
-                    SNew(STextBlock)
-                    .Text_Lambda([this]() {
-                        return MetricsText.IsValid() ? MetricsText.Pin()->GetText() : FText::FromString(TEXT("Metrics loading..."));
-                    })
+                    SAssignNew(MetricsText, STextBlock)
+                    .Text(FText::FromString(TEXT("Metrics loading...")))
                 ]
 
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 12)
@@ -148,10 +147,8 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
                         SNew(SVerticalBox)
                         + SVerticalBox::Slot().AutoHeight().Padding(2)
                         [
-                            SNew(STextBlock)
-                            .Text_Lambda([this]() {
-                                return CopilotSummaryText.IsValid() ? CopilotSummaryText.Pin()->GetText() : FText::FromString(TEXT("No result yet"));
-                            })
+                            SAssignNew(CopilotSummaryText, STextBlock)
+                            .Text(FText::FromString(TEXT("No result yet")))
                         ]
                         + SVerticalBox::Slot().AutoHeight().Padding(2)
                         [
@@ -244,7 +241,7 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
     ];
 }
 
-void SCopilotPanel::RequestCapabilities() const
+void SCopilotPanel::RequestCapabilities()
 {
     TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
     Request->SetURL(TEXT("http://127.0.0.1:7000/agents/capabilities"));
@@ -298,7 +295,7 @@ void SCopilotPanel::UpdateCapabilities(const TArray<TSharedPtr<FAgentCapabilityR
     CapabilityItems = NewItems;
     if (CapabilityListView.IsValid())
     {
-        CapabilityListView.Pin()->RequestListRefresh();
+        CapabilityListView->RequestListRefresh();
     }
 }
 
@@ -328,7 +325,7 @@ TSharedRef<ITableRow> SCopilotPanel::OnGenerateCapabilityRow(TSharedPtr<FAgentCa
     ];
 }
 
-void SCopilotPanel::RequestMetrics() const
+void SCopilotPanel::RequestMetrics()
 {
     TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
     Request->SetURL(TEXT("http://127.0.0.1:7001/metrics"));
@@ -349,7 +346,10 @@ void SCopilotPanel::RequestMetrics() const
         FString Summary;
         for (const auto& Pair : Root->Values)
         {
-            Summary += Pair.Key + TEXT("=") + Pair.Value->AsNumber() + TEXT(" ");
+            if (Pair.Value.IsValid() && Pair.Value->Type == EJson::Number)
+            {
+                Summary += FString::Printf(TEXT("%s=%.2f "), *Pair.Key, Pair.Value->AsNumber());
+            }
         }
         UpdateMetricsText(Summary);
     });
@@ -360,11 +360,11 @@ void SCopilotPanel::UpdateMetricsText(const FString& Text)
 {
     if (MetricsText.IsValid())
     {
-        MetricsText.Pin()->SetText(FText::FromString(Text));
+        MetricsText->SetText(FText::FromString(Text));
     }
 }
 
-void SCopilotPanel::RequestNpcSample() const
+void SCopilotPanel::RequestNpcSample()
 {
     TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
     Request->SetURL(TEXT("http://127.0.0.1:7000/agents/npc/task"));
@@ -387,7 +387,7 @@ void SCopilotPanel::RequestNpcSample() const
         const TSharedPtr<FJsonObject>* BehaviorPlan = nullptr;
         if (Root->TryGetObjectField(TEXT("behavior_plan"), BehaviorPlan))
         {
-            UpdateBehaviorPlan(BehaviorPlan->Get()->Values);
+            UpdateBehaviorPlan(*BehaviorPlan);
         }
         const TArray<TSharedPtr<FJsonValue>>* Dialogue;
         if (Root->TryGetArrayField(TEXT("dialogue"), Dialogue) && Dialogue->Num())
@@ -398,16 +398,40 @@ void SCopilotPanel::RequestNpcSample() const
     Request->ProcessRequest();
 }
 
-void SCopilotPanel::UpdateBehaviorPlan(const TMap<FString, FString>& Plan)
+void SCopilotPanel::UpdateBehaviorPlan(const TSharedPtr<FJsonObject>& Plan)
 {
     BehaviorEntries.Empty();
-    for (const auto& Entry : Plan)
+    if (!Plan.IsValid())
     {
-        BehaviorEntries.Add(MakeShared<FString>(FString::Printf(TEXT("%s → %s"), *Entry.Key, *Entry.Value)));
+        if (BehaviorListView.IsValid())
+        {
+            BehaviorListView->RequestListRefresh();
+        }
+        return;
+    }
+    for (const auto& Entry : Plan->Values)
+    {
+        FString ValueString = TEXT("<empty>");
+        if (Entry.Value.IsValid())
+        {
+            switch (Entry.Value->Type)
+            {
+            case EJson::String:
+                ValueString = Entry.Value->AsString();
+                break;
+            case EJson::Number:
+                ValueString = FString::Printf(TEXT("%.2f"), Entry.Value->AsNumber());
+                break;
+            default:
+                ValueString = TEXT("[complex value]");
+                break;
+            }
+        }
+        BehaviorEntries.Add(MakeShared<FString>(FString::Printf(TEXT("%s → %s"), *Entry.Key, *ValueString)));
     }
     if (BehaviorListView.IsValid())
     {
-        BehaviorListView.Pin()->RequestListRefresh();
+        BehaviorListView->RequestListRefresh();
     }
 }
 
@@ -427,7 +451,7 @@ void SCopilotPanel::AppendLog(const FString& Entry)
     LogEntries.Add(MakeShared<FString>(Entry));
     if (LogListView.IsValid())
     {
-        LogListView.Pin()->RequestListRefresh();
+        LogListView->RequestListRefresh();
     }
 }
 
@@ -447,11 +471,11 @@ void SCopilotPanel::UpdateCopilotResult(const FString& Summary, const TArray<TSh
     CopilotFileEntries = Files;
     if (CopilotFileListView.IsValid())
     {
-        CopilotFileListView.Pin()->RequestListRefresh();
+        CopilotFileListView->RequestListRefresh();
     }
     if (CopilotSummaryText.IsValid())
     {
-        CopilotSummaryText.Pin()->SetText(FText::FromString(Summary));
+        CopilotSummaryText->SetText(FText::FromString(Summary));
     }
 }
 
@@ -466,7 +490,7 @@ TSharedRef<ITableRow> SCopilotPanel::OnGenerateCopilotFileRow(TSharedPtr<FString
     ];
 }
 
-FReply SCopilotPanel::OnSendPromptClicked() const
+FReply SCopilotPanel::OnSendPromptClicked()
 {
     if (!PromptInput.IsValid())
     {
@@ -474,13 +498,22 @@ FReply SCopilotPanel::OnSendPromptClicked() const
     }
 
     const FString Prompt = PromptInput->GetText().ToString();
-    FString Content = FString::Printf(TEXT("{\"prompt\":\"%s\",\"context\":{\"chunk_id\":\"%s\"},\"schema\":\"code\"}"), *Prompt, *SelectedChunkId);
+    TSharedPtr<FJsonObject> Root = MakeShared<FJsonObject>();
+    Root->SetStringField(TEXT("prompt"), Prompt);
+    Root->SetStringField(TEXT("schema"), TEXT("code"));
+    TSharedPtr<FJsonObject> Context = MakeShared<FJsonObject>();
+    Context->SetStringField(TEXT("chunk_id"), SelectedChunkId);
+    Root->SetObjectField(TEXT("context"), Context);
+    FString Content;
+    TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Content);
+    FJsonSerializer::Serialize(Root.ToSharedRef(), Writer);
     TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
     Request->SetURL(TEXT("http://127.0.0.1:7000/api/copilot/generate"));
     Request->SetVerb(TEXT("POST"));
     Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
     Request->SetContentAsString(Content);
     Request->OnProcessRequestComplete().BindSP(this, &SCopilotPanel::HandleCopilotResponse);
+
     Request->ProcessRequest();
 
     AppendLog(FString::Printf(TEXT("Sent copilot prompt (chunk %s)"), *SelectedChunkId));

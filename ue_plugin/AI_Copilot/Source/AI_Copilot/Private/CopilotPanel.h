@@ -4,12 +4,15 @@
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
+#include "Input/Reply.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/Input/SEditableTextBox.h"
 #include "Widgets/Views/SListView.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/SBoxPanel.h"
+
+class FJsonObject;
 
 struct FAgentCapabilityRecord
 {
@@ -28,15 +31,15 @@ public:
     void Construct(const FArguments& InArgs);
 
 private:
-    void RequestCapabilities() const;
+    void RequestCapabilities();
     void UpdateCapabilities(const TArray<TSharedPtr<FAgentCapabilityRecord>>& NewItems);
     TSharedRef<ITableRow> OnGenerateCapabilityRow(TSharedPtr<FAgentCapabilityRecord> Item, const TSharedRef<STableViewBase>& OwnerTable) const;
 
-    void RequestMetrics() const;
+    void RequestMetrics();
     void UpdateMetricsText(const FString& Text);
 
-    void RequestNpcSample() const;
-    void UpdateBehaviorPlan(const TMap<FString, FString>& Plan);
+    void RequestNpcSample();
+    void UpdateBehaviorPlan(const TSharedPtr<FJsonObject>& Plan);
     TSharedRef<ITableRow> OnGenerateBehaviorRow(TSharedPtr<FString> Item, const TSharedRef<STableViewBase>& OwnerTable) const;
 
     void AppendLog(const FString& Entry);
@@ -47,18 +50,18 @@ private:
 
     void HandleCopilotResponse(FHttpRequestPtr Req, FHttpResponsePtr Resp, bool bSuccess);
 
-    FReply OnSendPromptClicked() const;
+    FReply OnSendPromptClicked();
     FReply OnResourceCardClicked(FString ChunkPath, FString ChunkId);
 
 private:
     FString SelectedChunkId;
     TSharedPtr<SEditableTextBox> PromptInput;
-    TWeakPtr<SListView<TSharedPtr<FAgentCapabilityRecord>>> CapabilityListView;
-    TWeakPtr<SListView<TSharedPtr<FString>>> LogListView;
-    TWeakPtr<SListView<TSharedPtr<FString>>> BehaviorListView;
-    TWeakPtr<SListView<TSharedPtr<FString>>> CopilotFileListView;
-    TWeakPtr<STextBlock> CopilotSummaryText;
-    TWeakPtr<STextBlock> MetricsText;
+    TSharedPtr<SListView<TSharedPtr<FAgentCapabilityRecord>>> CapabilityListView;
+    TSharedPtr<SListView<TSharedPtr<FString>>> LogListView;
+    TSharedPtr<SListView<TSharedPtr<FString>>> BehaviorListView;
+    TSharedPtr<SListView<TSharedPtr<FString>>> CopilotFileListView;
+    TSharedPtr<STextBlock> CopilotSummaryText;
+    TSharedPtr<STextBlock> MetricsText;
     TArray<TSharedPtr<FAgentCapabilityRecord>> CapabilityItems;
     TArray<TSharedPtr<FString>> LogEntries;
     TArray<TSharedPtr<FString>> BehaviorEntries;
