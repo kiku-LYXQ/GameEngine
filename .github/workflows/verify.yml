@@ -1,0 +1,35 @@
+name: Validate AI GameDev Platform
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install fastapi uvicorn httpx pydantic pydantic-settings
+      - name: Run verify_all
+        env:
+          AGENT_PORT: 7000
+          LLM_PORT: 7001
+        run: |
+          nohup uvicorn server.agents.app:app --port $AGENT_PORT --host 127.0.0.1 >/tmp/agent.log 2>&1 &
+          AGENT_PID=$!
+          nohup uvicorn server.llm_runtime.app:app --port $LLM_PORT --host 127.0.0.1 >/tmp/llm.log 2>&1 &
+          LLM_PID=$!
+          sleep 5
+          bash scripts/verify_all.sh
+          kill $AGENT_PID $LLM_PID
