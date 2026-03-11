@@ -22,6 +22,13 @@ from .models import (
     NpcTaskRequest,
     NpcTaskResponse,
     TaskLogsResponse,
+    CopilotAssetSearchRequest,
+    CopilotAssetSearchResponse,
+    CopilotExplainRequest,
+    CopilotExplainResponse,
+    CopilotFile,
+    CopilotGenerateRequest,
+    CopilotGenerateResponse,
 )
 
 logger = logging.getLogger("server.agents")
