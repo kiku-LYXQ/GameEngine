@@ -1,32 +1,35 @@
 #include "CopilotPanel.h"
 #include "CopilotHttpClient.h"
+
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
-#include "HttpManager.h"
-#include "Logging/LogMacros.h"
+
 #include "Async/Async.h"
 #include "Dom/JsonObject.h"
 #include "Json.h"
-#include "Misc/Guid.h"
+#include "Logging/LogMacros.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
 #include "Styling/CoreStyle.h"
-#include "Widgets/Text/STextBlock.h"
-#include "Widgets/SBoxPanel.h"
+
+#include "Widgets/Input/SEditableTextBox.h"
+#include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SUniformGridPanel.h"
 #include "Widgets/Layout/SWrapBox.h"
 #include "Widgets/Layout/SSeparator.h"
 #include "Widgets/Layout/SExpandableArea.h"
+#include "Widgets/Layout/SBox.h"
+#include "Widgets/Layout/SVerticalBox.h"
+#include "Widgets/Layout/SHorizontalBox.h"
 #include "Widgets/Notifications/SProgressBar.h"
-#include "Widgets/Input/SEditableTextBox.h"
-#include "Widgets/Input/SButton.h"
+#include "Widgets/Text/STextBlock.h"
 #include "Widgets/Views/STableRow.h"
 #include "Widgets/Views/STableViewBase.h"
-#include "Widgets/Layout/SBox.h"
+#include "Widgets/Views/SListView.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogCopilotPanel, Log, All);
 
@@ -34,6 +37,8 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
 {
     const TArray<FString> Templates = {TEXT("Sprint Ability"), TEXT("Burst Damage"), TEXT("AI Patrol"), TEXT("Dialogue Event")};
     const TArray<FString> Resources = {TEXT("Content/VFX/explosion_fx"), TEXT("Blueprints/BP_Player"), TEXT("Materials/M_Spirit"), TEXT("Sound/Ability/impact")};
+
+    SelectedChunkId = TEXT("chunk-001");
 
     RequestCapabilities();
     RequestMetrics();
@@ -43,11 +48,13 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
     [
         SNew(SBorder)
         .Padding(16)
+        .BorderImage(FCoreStyle::Get().GetBrush("ToolPanel.GroupBorder"))
         [
             SNew(SScrollBox)
             + SScrollBox::Slot()
             [
                 SNew(SVerticalBox)
+
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
                 [
                     SNew(STextBlock)
@@ -96,7 +103,7 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
                     ]
                 ]
 
-                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 12)
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 14)
                 [
                     SNew(STextBlock)
                     .Text(FText::FromString(TEXT("Agent Capabilities")))
@@ -123,7 +130,9 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
                     .InitiallyCollapsed(false)
                     .HeaderContent()
                     [
-                        SNew(STextBlock).Text(FText::FromString(TEXT("NPC Behavior Plan"))).Font(FCoreStyle::Get().GetFontStyle("BoldFont"))
+                        SNew(STextBlock)
+                        .Text(FText::FromString(TEXT("NPC Behavior Plan")))
+                        .Font(FCoreStyle::Get().GetFontStyle("BoldFont"))
                     ]
                     .BodyContent()
                     [
@@ -140,7 +149,9 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
                     .InitiallyCollapsed(true)
                     .HeaderContent()
                     [
-                        SNew(STextBlock).Text(FText::FromString(TEXT("Copilot Output Preview"))).Font(FCoreStyle::Get().GetFontStyle("BoldFont"))
+                        SNew(STextBlock)
+                        .Text(FText::FromString(TEXT("Copilot Output Preview")))
+                        .Font(FCoreStyle::Get().GetFontStyle("BoldFont"))
                     ]
                     .BodyContent()
                     [
@@ -166,7 +177,9 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
                     .InitiallyCollapsed(false)
                     .HeaderContent()
                     [
-                        SNew(STextBlock).Text(FText::FromString(TEXT("Execution Logs"))).Font(FCoreStyle::Get().GetFontStyle("BoldFont"))
+                        SNew(STextBlock)
+                        .Text(FText::FromString(TEXT("Execution Logs")))
+                        .Font(FCoreStyle::Get().GetFontStyle("BoldFont"))
                     ]
                     .BodyContent()
                     [
@@ -266,7 +279,7 @@ void SCopilotPanel::RequestCapabilities()
                 {
                     if (const TSharedPtr<FJsonObject> Obj = Value->AsObject())
                     {
-                        TSharedPtr<FAgentCapabilityRecord> Record = MakeShared<FAgentCapabilityRecord>();
+                        auto Record = MakeShared<FAgentCapabilityRecord>();
                         Record->Name = Obj->GetStringField(TEXT("name"));
                         Record->SuccessRate = Obj->GetNumberField(TEXT("success_rate"));
                         Record->LatencyMs = Obj->GetIntegerField(TEXT("avg_latency_ms"));
@@ -319,7 +332,7 @@ TSharedRef<ITableRow> SCopilotPanel::OnGenerateCapabilityRow(TSharedPtr<FAgentCa
                 {
                     return FText::FromString(TEXT("Unknown"));
                 }
-                return FText::FromString(FString::Printf(TEXT("%s · %.0f%% · %dms · %d tokens"), *Item->Name, Item->SuccessRate * 100.f, Item->LatencyMs, Item->Tokens));
+                return FText::FromString(FString::Printf(TEXT("%s · %.0f%% · %dms · %d tokens"), *Item->Name, Item->SuccessRate * 100.f, Item->LatencyMs, Item->Tokens));
             })
         ]
     ];
@@ -504,16 +517,17 @@ FReply SCopilotPanel::OnSendPromptClicked()
     TSharedPtr<FJsonObject> Context = MakeShared<FJsonObject>();
     Context->SetStringField(TEXT("chunk_id"), SelectedChunkId);
     Root->SetObjectField(TEXT("context"), Context);
+
     FString Content;
     TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Content);
     FJsonSerializer::Serialize(Root.ToSharedRef(), Writer);
+
     TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
     Request->SetURL(TEXT("http://127.0.0.1:7000/api/copilot/generate"));
     Request->SetVerb(TEXT("POST"));
     Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
     Request->SetContentAsString(Content);
     Request->OnProcessRequestComplete().BindSP(this, &SCopilotPanel::HandleCopilotResponse);
-
     Request->ProcessRequest();
 
     AppendLog(FString::Printf(TEXT("Sent copilot prompt (chunk %s)"), *SelectedChunkId));
@@ -527,6 +541,7 @@ void SCopilotPanel::HandleCopilotResponse(FHttpRequestPtr Req, FHttpResponsePtr 
         AppendLog(TEXT("Copilot response failed"));
         return;
     }
+
     TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Resp->GetContentAsString());
     TSharedPtr<FJsonObject> Root;
     if (!FJsonSerializer::Deserialize(Reader, Root) || !Root.IsValid())
@@ -534,19 +549,21 @@ void SCopilotPanel::HandleCopilotResponse(FHttpRequestPtr Req, FHttpResponsePtr 
         AppendLog(TEXT("Copilot response parse error"));
         return;
     }
-    FString Summary = Root->GetStringField(TEXT("summary"));
+
+    const FString Summary = Root->GetStringField(TEXT("summary"));
     TArray<TSharedPtr<FString>> Files;
     const TArray<TSharedPtr<FJsonValue>>* FileArray;
     if (Root->TryGetArrayField(TEXT("files"), FileArray))
     {
-        for (const auto& Value : *FileArray)
+        for (const auto& FileValue : *FileArray)
         {
-            if (const TSharedPtr<FJsonObject> Obj = Value->AsObject())
+            if (const TSharedPtr<FJsonObject> Obj = FileValue->AsObject())
             {
                 Files.Add(MakeShared<FString>(Obj->GetStringField(TEXT("path"))));
             }
         }
     }
+
     AsyncTask(ENamedThreads::GameThread, [this, Summary = MoveTemp(Summary), Files = MoveTemp(Files)]() mutable {
         UpdateCopilotResult(Summary, Files);
         AppendLog(TEXT("Copilot rendered result"));

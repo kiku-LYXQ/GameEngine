@@ -15,7 +15,9 @@ public class AI_Copilot : ModuleRules
             "SlateCore",
             "HTTP",
             "Json",
-            "JsonUtilities"
+            "JsonUtilities",
+            "ToolMenus",
+            "LevelEditor"
         });
     }
 }
