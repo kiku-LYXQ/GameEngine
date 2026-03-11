@@ -10,7 +10,7 @@
 #include "WorkspaceMenuStructureModule.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "Styling/AppStyle.h"
-#include "Styling/SlateIcon.h"
+#include "Styling/SlateTypes.h"
 
 #define LOCTEXT_NAMESPACE "FAI_CopilotModule"
 
