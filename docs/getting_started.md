@@ -15,12 +15,17 @@
 find . -maxdepth 2 -name "*.uproject"
 find . -maxdepth 2 -type d | sort
 ```
-- 如果没有 `.uproject` 且也没有 `Config/ Content/ Source/` 这样的 Unreal 工程骨架，就说明该仓库当前只有插件、后端、脚本和 docs，并不包含完整的 Unreal 工程。  
-- 解决办法：在 Unreal 编辑器中先新建一个 C++ 项目（项目名可为 GameEngine），生成 `.uproject`、`Config/`、`Content/`、`Source/`。  
-- 然后把本仓库的 `ue_plugin/`, `server/`, `scripts/`, `docs/` 内容合并到这个新建工程的目录里，避免覆盖 Unreal 自动创建的核心文件；再把 `.uproject` 所在目录作为新仓库 root 进行 Git 操作。  
-- 如果你希望直接基于本仓库继续操作，也可以在其他位置创建 `.uproject` 工程后，将文件如 `Config/`, `Content/`, `Source/`, `Plugins/` 等复制/移动到此仓库，确保 Unreal 识别该目录为工程。  
+- 如果没有 `.uproject` 且也没有 `Config/ Content/ Source/` 这样的 Unreal 工程骨架，说明当前仓库仅包含 AI 插件（ue_plugin/AI_Copilot）、Python 后端（server/）、脚本和 docs，并不是完整的 Unreal 工程。  
+- 解决办法：在 Unreal 编辑器中先新建一个 C++ 项目（项目名可为 GameEngine），生成 `.uproject`, `Config/`, `Content/`, `Source/` 目录，再把本仓库的 `ue_plugin/AI_Copilot`、`server/`, `scripts/`, `docs/` 等内容复制/合并进去，避免覆盖 Unreal 自动生成的核心文件。  
+- 作为替代，也可以先从一个已有 UE 工程中复制 `.uproject`, `Config/`, `Content/`, `Source/`, `Plugins/` 到这个仓库，然后再把 `AI_Copilot` 插件放到 `Plugins/AI_Copilot` 目录，使当前 repo 成为完整的工程。  
 
-之后再继续下面章节（服务启动、脚本验证、Unreal 编辑器使用）。
+## 1.6. 插件位置与结构
+我们的 Unreal 插件源码在：
+```
+ue_plugin/AI_Copilot/AI_Copilot.uplugin
+ue_plugin/AI_Copilot/Source/AI_Copilot/
+```
+要在 Unreal 工程中使用，请将 `AI_Copilot` 目录复制到工程的 `Plugins/AI_Copilot` 目录。然后运行 `GenerateProjectFiles` + `Build`，生成 `Binaries/`，再启动 Unreal 编辑器并在 Plugins 面板中启用 AI Copilot 插件。  
 
 ## 2. 启动本地服务
 1. 在 `GameEngine` 目录打开终端，运行：
