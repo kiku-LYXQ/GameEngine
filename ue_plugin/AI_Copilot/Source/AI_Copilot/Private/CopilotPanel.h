@@ -1,16 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HttpModule.h"
+#include "Input/Reply.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
-#include "Input/Reply.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/Input/SEditableTextBox.h"
-#include "Widgets/Views/SListView.h"
 #include "Widgets/Text/STextBlock.h"
-#include "Widgets/SBoxPanel.h"
+#include "Widgets/Views/SListView.h"
 
 class FJsonObject;
 

@@ -23,13 +23,12 @@
 #include "Widgets/Layout/SSeparator.h"
 #include "Widgets/Layout/SExpandableArea.h"
 #include "Widgets/Layout/SBox.h"
-#include "Widgets/Layout/SVerticalBox.h"
-#include "Widgets/Layout/SHorizontalBox.h"
 #include "Widgets/Notifications/SProgressBar.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Views/STableRow.h"
 #include "Widgets/Views/STableViewBase.h"
 #include "Widgets/Views/SListView.h"
+#include "Widgets/SBoxPanel.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogCopilotPanel, Log, All);
 
@@ -550,7 +549,7 @@ void SCopilotPanel::HandleCopilotResponse(FHttpRequestPtr Req, FHttpResponsePtr 
         return;
     }
 
-    const FString Summary = Root->GetStringField(TEXT("summary"));
+    FString Summary = Root->GetStringField(TEXT("summary"));
     TArray<TSharedPtr<FString>> Files;
     const TArray<TSharedPtr<FJsonValue>>* FileArray;
     if (Root->TryGetArrayField(TEXT("files"), FileArray))
