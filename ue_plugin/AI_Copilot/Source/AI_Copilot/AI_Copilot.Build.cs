@@ -20,7 +20,8 @@ public class AI_Copilot : ModuleRules
             "Projects",
             "ToolMenus",
             "UnrealEd",
-            "LevelEditor"
+            "LevelEditor",
+            "WorkspaceMenuStructure"
         });
     }
 }
