@@ -92,7 +92,7 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
                     [
                         SNew(SButton)
                         .Text(FText::FromString(TEXT("Send to Copilot")))
-                        .OnClicked(this, &SCopilotPanel::OnSendPromptClicked)
+                        .OnClicked(FOnClicked::CreateSP(this, &SCopilotPanel::OnSendPromptClicked))
                     ]
                     + SHorizontalBox::Slot().AutoWidth()
                     [
@@ -207,7 +207,7 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
                         [
                             SNew(SButton)
                             .Text(FText::FromString(Resources[0]))
-                            .OnClicked(this, &SCopilotPanel::OnResourceCardClicked, Resources[0], TEXT("chunk-001"))
+                            .OnClicked(FOnClicked::CreateSP(this, &SCopilotPanel::OnResourceCardClicked, Resources[0], TEXT("chunk-001")))
                         ]
                     ]
                     + SUniformGridPanel::Slot(1, 0)
@@ -217,7 +217,7 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
                         [
                             SNew(SButton)
                             .Text(FText::FromString(Resources[1]))
-                            .OnClicked(this, &SCopilotPanel::OnResourceCardClicked, Resources[1], TEXT("chunk-002"))
+                            .OnClicked(FOnClicked::CreateSP(this, &SCopilotPanel::OnResourceCardClicked, Resources[1], TEXT("chunk-002")))
                         ]
                     ]
                     + SUniformGridPanel::Slot(0, 1)
@@ -227,7 +227,7 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
                         [
                             SNew(SButton)
                             .Text(FText::FromString(Resources[2]))
-                            .OnClicked(this, &SCopilotPanel::OnResourceCardClicked, Resources[2], TEXT("chunk-003"))
+                            .OnClicked(FOnClicked::CreateSP(this, &SCopilotPanel::OnResourceCardClicked, Resources[2], TEXT("chunk-003")))
                         ]
                     ]
                     + SUniformGridPanel::Slot(1, 1)
@@ -237,7 +237,7 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
                         [
                             SNew(SButton)
                             .Text(FText::FromString(Resources[3]))
-                            .OnClicked(this, &SCopilotPanel::OnResourceCardClicked, Resources[3], TEXT("chunk-004"))
+                            .OnClicked(FOnClicked::CreateSP(this, &SCopilotPanel::OnResourceCardClicked, Resources[3], TEXT("chunk-004")))
                         ]
                     ]
                 ]
@@ -321,7 +321,7 @@ TSharedRef<ITableRow> SCopilotPanel::OnGenerateCapabilityRow(TSharedPtr<FAgentCa
             SNew(SProgressBar)
             .Percent(Item.IsValid() ? Item->SuccessRate : 0.f)
             .FillColorAndOpacity(FLinearColor::Green)
-            .Thickness(8.f)
+            .BarThickness(8.f)
         ]
         + SHorizontalBox::Slot().AutoWidth().Padding(8)
         [
