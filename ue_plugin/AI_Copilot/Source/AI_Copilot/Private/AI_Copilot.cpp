@@ -7,6 +7,7 @@
 #include "LevelEditor.h"
 #include "ToolMenus.h"
 #include "ToolMenuEntry.h"
+#include "WorkspaceMenuStructure.h"
 #include "WorkspaceMenuStructureModule.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "Styling/AppStyle.h"
