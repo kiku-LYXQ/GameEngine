@@ -28,12 +28,17 @@ void FAI_CopilotModule::StartupModule()
         FCanExecuteAction());
 
     RegisterTabSpawner();
-    RegisterMenus();
+    UToolMenus::RegisterStartupCallback(
+        FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FAI_CopilotModule::RegisterMenus));
 }
 
 void FAI_CopilotModule::ShutdownModule()
 {
-    UToolMenus::UnregisterOwner(this);
+    if (UToolMenus::IsToolMenuUIEnabled())
+    {
+        UToolMenus::UnRegisterStartupCallback(this);
+        UToolMenus::UnregisterOwner(this);
+    }
 
     FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(AI_CopilotTabName);
 
@@ -100,3 +105,5 @@ void FAI_CopilotModule::OpenCopilotTab()
 }
 
 #undef LOCTEXT_NAMESPACE
+
+IMPLEMENT_MODULE(FAI_CopilotModule, AI_Copilot)
