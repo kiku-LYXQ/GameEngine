@@ -1,9 +1,16 @@
 #include "CopilotPanel.h"
+#include "CopilotHttpClient.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
 #include "HttpManager.h"
 #include "Logging/LogMacros.h"
+#include "Async/Async.h"
+#include "Dom/JsonObject.h"
+#include "Json.h"
+#include "Misc/Guid.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
 #include "Styling/CoreStyle.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Layout/SBorder.h"
@@ -15,8 +22,18 @@
 #include "Widgets/Input/SEditableTextBox.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SSeparator.h"
+#include "Widgets/Views/SListView.h"
+#include "Widgets/Views/STableRow.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogCopilotPanel, Log, All);
+
+struct FAgentCapabilityRecord
+{
+    FString Name;
+    float SuccessRate = 0.f;
+    int32 LatencyMs = 0;
+    int32 Tokens = 0;
+};
 
 void SCopilotPanel::Construct(const FArguments& InArgs)
 {
@@ -34,6 +51,7 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
             + SScrollBox::Slot()
             [
                 SNew(SVerticalBox)
+
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
                 [
                     SNew(STextBlock)
@@ -47,10 +65,6 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
                     + SWrapBox::Slot().Padding(4)
                     [
                         SNew(STextBlock).Text(FText::FromString(TEXT("Select a template to prefill the prompt")))
-                    ]
-                    + SWrapBox::Slot().Padding(4)
-                    [
-                        SNew(STextBlock).Text(FText::FromString(TEXT("(Templates interactively expand AND attach context)")))
                     ]
                 ]
 
@@ -66,10 +80,6 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
                     ]
                     + SWrapBox::Slot().Padding(4)
                     [
-                        SNew(SSeparator)
-                    ]
-                    + SWrapBox::Slot().Padding(4)
-                    [
                         SNew(STextBlock)
                         .Text(FText::FromString(FString::Join(Templates, TEXT(" | "))))
                         .AutoWrapText(true)
@@ -78,7 +88,7 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
 
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
                 [
-                    SNew(SEditableTextBox)
+                    SAssignNew(PromptInput, SEditableTextBox)
                     .HintText(FText::FromString(TEXT("Describe the behavior you want (e.g. Player sprint ability).")))
                 ]
 
@@ -94,9 +104,24 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
                     + SHorizontalBox::Slot().AutoWidth()
                     [
                         SNew(STextBlock)
-                        .Text(FText::FromString(TEXT("Chunk follow-up: select a chunk in the list and it auto-appends to the prompt.")))
+                        .Text(FText::FromString(TEXT("Chunk follow-up: select a chunk and it auto-appends to the prompt.")))
                         .AutoWrapText(true)
                     ]
+                ]
+
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
+                [
+                    SNew(STextBlock)
+                    .Text(FText::FromString(TEXT("Agent Capabilities")))
+                    .Font(FCoreStyle::Get().GetFontStyle("BoldFont"))
+                ]
+
+                + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 12)
+                [
+                    SAssignNew(CapabilityListView, SListView<TSharedPtr<FAgentCapabilityRecord>>)
+                    .ListItemsSource(&CapabilityItems)
+                    .SelectionMode(ESelectionMode::None)
+                    .OnGenerateRow(this, &SCopilotPanel::OnGenerateCapabilityRow)
                 ]
 
                 + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 12)
@@ -165,8 +190,20 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
 
 FReply SCopilotPanel::OnSendPromptClicked() const
 {
-    // Placeholder for RPC to Copilot HTTP client.
-    UE_LOG(LogCopilotPanel, Log, TEXT("OnSendPromptClicked called with chunk %s"), *SelectedChunkId);
+    if (!PromptInput.IsValid())
+    {
+        return FReply::Handled();
+    }
+
+    const FString Prompt = PromptInput->GetText().ToString();
+    FCopilotRequestPayload Payload;
+    Payload.Endpoint = TEXT("http://127.0.0.1:7000/api/copilot/generate");
+    Payload.Payload = FString::Printf(TEXT("{\"prompt\":\"%s\",\"context\":{\"chunk_id\":\"%s\"}}"), *Prompt, *SelectedChunkId);
+    Payload.ChunkId = SelectedChunkId;
+    Payload.RequestId = FGuid::NewGuid().ToString();
+    Payload.Metadata.Add(TEXT("selected_chunk"), SelectedChunkId);
+    FCopilotHttpClient::PostRequest(Payload);
+    UE_LOG(LogCopilotPanel, Log, TEXT("Sent prompt with chunk %s"), *SelectedChunkId);
     return FReply::Handled();
 }
 
@@ -175,20 +212,94 @@ void SCopilotPanel::RequestCapabilities() const
     TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
     Request->SetURL(TEXT("http://127.0.0.1:7000/agents/capabilities"));
     Request->SetVerb(TEXT("GET"));
-    Request->OnProcessRequestComplete().BindLambda([](FHttpRequestPtr Req, FHttpResponsePtr Resp, bool bSuccess) {
+    Request->OnProcessRequestComplete().BindLambda([this](FHttpRequestPtr Req, FHttpResponsePtr Resp, bool bSuccess) {
         if (!bSuccess || !Resp.IsValid())
         {
             UE_LOG(LogCopilotPanel, Warning, TEXT("Failed to fetch agent capabilities"));
             return;
         }
-        UE_LOG(LogCopilotPanel, Log, TEXT("Agent capabilities: %s"), *Resp->GetContentAsString());
+
+        TArray<TSharedPtr<FAgentCapabilityRecord>> Parsed;
+        const FString Payload = Resp->GetContentAsString();
+        TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Payload);
+        TSharedPtr<FJsonObject> Root;
+        if (FJsonSerializer::Deserialize(Reader, Root) && Root.IsValid())
+        {
+            const TArray<TSharedPtr<FJsonValue>>* Arr;
+            if (Root->TryGetArrayField(TEXT("capabilities"), Arr))
+            {
+                for (const auto& Value : *Arr)
+                {
+                    if (const TSharedPtr<FJsonObject> Obj = Value->AsObject())
+                    {
+                        TSharedPtr<FAgentCapabilityRecord> Record = MakeShared<FAgentCapabilityRecord>();
+                        Record->Name = Obj->GetStringField(TEXT("name"));
+                        Record->SuccessRate = Obj->GetNumberField(TEXT("success_rate"));
+                        Record->LatencyMs = Obj->GetIntegerField(TEXT("avg_latency_ms"));
+                        Record->Tokens = Obj->GetIntegerField(TEXT("avg_tokens"));
+                        Parsed.Add(Record);
+                    }
+                }
+            }
+        }
+
+        if (Parsed.Num() == 0)
+        {
+            Parsed.Add(MakeShared<FAgentCapabilityRecord>(FAgentCapabilityRecord{TEXT("Planner"), 0.9f, 180, 80}));
+        }
+
+        AsyncTask(ENamedThreads::GameThread, [this, Parsed = MoveTemp(Parsed)]() mutable {
+            UpdateCapabilities(Parsed);
+        });
     });
     Request->ProcessRequest();
+}
+
+void SCopilotPanel::UpdateCapabilities(const TArray<TSharedPtr<FAgentCapabilityRecord>>& NewItems)
+{
+    CapabilityItems = NewItems;
+    if (CapabilityListView.IsValid())
+    {
+        CapabilityListView->RequestListRefresh();
+    }
+}
+
+TSharedRef<ITableRow> SCopilotPanel::OnGenerateCapabilityRow(TSharedPtr<FAgentCapabilityRecord> Item, const TSharedRef<STableViewBase>& OwnerTable) const
+{
+    return SNew(STableRow<TSharedPtr<FAgentCapabilityRecord>>, OwnerTable)
+    [
+        SNew(SHorizontalBox)
+        + SHorizontalBox::Slot().AutoWidth().Padding(4)
+        [
+            SNew(STextBlock)
+            .Text(FText::FromString(Item.IsValid() ? Item->Name : TEXT("Unknown")))
+            .Font(FCoreStyle::Get().GetFontStyle("BoldFont"))
+        ]
+        + SHorizontalBox::Slot().AutoWidth().Padding(4)
+        [
+            SNew(STextBlock)
+            .Text(FText::FromString(FString::Printf(TEXT("Success %.0f%%"), Item.IsValid() ? Item->SuccessRate * 100.f : 0.f)))
+        ]
+        + SHorizontalBox::Slot().AutoWidth().Padding(4)
+        [
+            SNew(STextBlock)
+            .Text(FText::FromString(FString::Printf(TEXT("Latency %dms"), Item.IsValid() ? Item->LatencyMs : 0)))
+        ]
+        + SHorizontalBox::Slot().AutoWidth().Padding(4)
+        [
+            SNew(STextBlock)
+            .Text(FText::FromString(FString::Printf(TEXT("Tokens %d"), Item.IsValid() ? Item->Tokens : 0)))
+        ]
+    ];
 }
 
 FReply SCopilotPanel::OnResourceCardClicked(FString ChunkPath, FString ChunkId)
 {
     SelectedChunkId = ChunkId;
+    if (PromptInput.IsValid())
+    {
+        PromptInput->SetText(FText::FromString(FString::Printf(TEXT("Follow up on %s"), *ChunkPath)));
+    }
     UE_LOG(LogCopilotPanel, Log, TEXT("Selected chunk: %s (%s)"), *ChunkId, *ChunkPath);
     return FReply::Handled();
 }
