@@ -36,10 +36,10 @@ find . -maxdepth 2 -type d | sort
 ## 3. 一键验证脚本
 - `scripts/validate_copilot.sh`: 验证 Agent → Copilot → LLM（capabilities → task → `/api/copilot/generate` → `/metrics`）；需要 `jq`。
 - `scripts/validate_npc.sh`: 验证 NPC Agent + LLM eval；记录 `evaluation.requests` 等指标。
+- `scripts/verify_all.sh`: 依赖 `uvicorn` 服务在 7000/7001 端口，顺序运行 `validate_copilot.sh` + `validate_npc.sh` 并输出 `/llm_runtime/metrics`，适合作为 CI/合规验证。
 - 只需运行：
   ```bash
-  bash scripts/validate_copilot.sh
-  bash scripts/validate_npc.sh
+  bash scripts/verify_all.sh
   ```
   输出 JSON 就表示链路可用。
 

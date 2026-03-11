@@ -46,6 +46,7 @@
 - `scripts/validate_copilot.sh` 可作为一键 smoke test：依次调用 `/agents/capabilities`, `/agents/task`, `/agents/status`, `/agents/logs`, `/api/copilot/generate` 以及 `/llm_runtime/metrics`，并打印 JSON 结果，方便确认 Copilot → Agent → LLM 的链路。
 - `scripts/validate_npc.sh` 验证 NPC Agent 与 NPC LLM 模型：执行 `/agents/npc/task`, `/agents/logs/{task_id}`, `/models/npc-dialogue-7b/evaluate`, `/llm_runtime/metrics`，并记录输出。
 - `docs/getting_started.md` 汇总了如何启动服务、运行验证脚本、打开 Unreal Copilot Panel 与查看 metrics，适合新手直接照着操作。
+- 新增 `scripts/verify_all.sh` 可在确认服务启动后依次运行 `validate_copilot.sh`, `validate_npc.sh`, 并输出最新 metrics，用于 CI/验证记录。
 ```bash
 # 1. 启动 Agent + LLM Runtime
 uvicorn server.agents.app:app --port 7000
