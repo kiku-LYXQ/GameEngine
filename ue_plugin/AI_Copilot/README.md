@@ -83,4 +83,5 @@ POST /api/copilot/asset-search
 ## Debug 与验证
 - 使用 `FCopilotHttpClient::PostRequest` 发起 `POST /api/copilot/generate` 请求，观察是否可以成功接收到 `files`，并调用 `FAssetToolsModule::RegisterAssetTypeActions` 创建资源。
 - 可通过 `curl http://127.0.0.1:7000/api/copilot/generate` 模拟请求，确保本地 LLM Runtime + Agent 正常响应。
-- 启动服务后 `curl http://127.0.0.1:7000/agents/capabilities` 应返回 capabilities JSON，便于 UI 侧展示。">
+- 启动服务后 `curl http://127.0.0.1:7000/agents/capabilities` 应返回 capabilities JSON，便于 UI 侧展示。
+- 可运行 `scripts/validate_copilot.sh`（需 `jq`）自动执行 agent task、logs、copilot API 与 LLM metrics 验证，确保整个链路一致。

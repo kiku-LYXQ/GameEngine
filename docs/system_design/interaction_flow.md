@@ -43,6 +43,7 @@
 - **External Proxy Health**：若 `_forward_to_external` 返回 `None`，会在 log 中产生日志 `External LLM request failed`，并记录 `external.failed` counter（后续可扩展）。
 
 ## 4. Smoke Test / Verification Commands
+- `scripts/validate_copilot.sh` 可作为一键 smoke test：依次调用 `/agents/capabilities`, `/agents/task`, `/agents/status`, `/agents/logs`, `/api/copilot/generate` 以及 `/llm_runtime/metrics`，并打印 JSON 结果，方便确认 Copilot → Agent → LLM 的链路。
 ```bash
 # 1. 启动 Agent + LLM Runtime
 uvicorn server.agents.app:app --port 7000

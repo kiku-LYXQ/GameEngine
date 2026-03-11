@@ -22,5 +22,6 @@
 
 ## 验证与调试
 - 启动 Agent/LLM 服务后，使用 `curl http://127.0.0.1:7000/agents/capabilities` 检查返回。
-- Panel 选 chunk 卡片时，查看输出 `Selected chunk: chunk-00X` 以检测 callback 是否生效。
+- Panel 选 chunk 卡片时，查看输出 `Selected chunk: chunk-00X` 来确认 callback 执行。
 - CLI 调用 `curl http://127.0.0.1:7000/agents/logs/<task_id>` 验证日志格式。
+- 本仓库提供 `scripts/validate_copilot.sh`：运行该脚本可以自动执行 capabilities 查询、agent task、logs、copilot mock request 与 LLM metrics，报告现有链路是否通畅。
