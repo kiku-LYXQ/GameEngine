@@ -31,10 +31,11 @@
   输出 JSON 就表示链路可用。
 
 ## 4. Unreal Editor 使用
-1. 打开 Unreal 编辑器，打开 `Plugins` 面板，启用 `AI Copilot` 插件，重启编辑器。  
-2. 工具栏会出现 `AI Copilot` 按钮，点击打开 Panel；或从 `Window > AI Copilot` 启动。
-3. Panel 会自动调用 `/agents/capabilities`, `/agents/npc/task`, `/llm_runtime/metrics`，并在 "Copilot Output Preview" 中显示生成的文件。  
-4. 在 Panel 内输入 prompt，点击 "Send to Copilot" 会触发 `/api/copilot/generate`，返回 summary + files，并把 logs/metrics 写入 "Execution Logs" 区。
+1. 确保 Unreal 项目文件 `GameEngine.uproject` 在 `/home/lxy/.openclaw/workspace-architect/GameEngine` 内。用编辑器打开该 `.uproject`，并在 `Plugins` 面板启用 `AI Copilot` 插件，完成后重启编辑器。
+2. 重启后工具栏将出现 `AI Copilot` 按钮，也可以通过菜单 `Window > AI Copilot` 打开 Panel。
+3. Panel 会自动调用 `/agents/capabilities`、`/agents/npc/task`、`/llm_runtime/metrics`，并在 “Copilot Output Preview” 中显示生成的 summary + 文件。
+4. 输入 prompt，点击 “Send to Copilot” 会触发 `/api/copilot/generate`；结果会写入“Copilot Output Preview”和“Execution Logs”，并自动记录 metrics。
+5. 只要在同一目录下启动 `uvicorn server.agents.app:app --port 7000` 与 `uvicorn server.llm_runtime.app:app --port 7001`，Panel 就能成功获取数据并执行 prompt。
 
 ## 5. 常见检查点
 | 目标 | 检查命令/位置 |
