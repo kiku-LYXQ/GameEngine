@@ -133,23 +133,51 @@ def task_logs(task_id: str) -> TaskLogsResponse:
         raise HTTPException(status_code=404, detail="Task not found")
 
 
+
+@app.post("/api/copilot/generate", response_model=CopilotGenerateResponse)
+def copilot_generate(payload: CopilotGenerateRequest) -> CopilotGenerateResponse:
+    file_path = payload.context.get('target_file', 'Source/Gameplay/Abilities/UAbility_Sprint.cpp')
+    return CopilotGenerateResponse(
+        files=[CopilotFile(path=file_path, content='// generated sprint ability code')],
+        summary='Generated sprint ability module',
+        diagnostics=[],
+    )
+
+
+@app.post("/api/copilot/explain-blueprint", response_model=CopilotExplainResponse)
+def copilot_explain(payload: CopilotExplainRequest) -> CopilotExplainResponse:
+    return CopilotExplainResponse(
+        explanation=f"{payload.blueprint_id} routes player input to movement nodes.",
+        steps=['Fetch input', 'Update movement', 'Trigger VFX'],
+        related_assets=['Content/VFX/movement_fx'],
+    )
+
+
+@app.post("/api/copilot/asset-search", response_model=CopilotAssetSearchResponse)
+def copilot_asset_search(payload: CopilotAssetSearchRequest) -> CopilotAssetSearchResponse:
+    matches = [
+        {'path': f"Content/VFX/{keyword}_fx", 'usage_score': '0.95'}
+        for keyword in payload.keywords
+    ]
+    return CopilotAssetSearchResponse(matches=matches)
+
+
 @app.post("/agents/npc/task", response_model=NpcTaskResponse)
 def npc_task(payload: NpcTaskRequest) -> NpcTaskResponse:
     record = task_context_store.new_task()
-    task_context_store.update_task(record.task_id, status=AgentStatus.running, log="NPC agent planning")
+    task_context_store.update_task(record.task_id, status=AgentStatus.running, log='NPC agent planning')
     result = plan_npc_task(payload)
     task_context_store.update_task(
         record.task_id,
         status=AgentStatus.done,
-        log="NPC agent completed",
+        log='NPC agent completed',
     )
     return NpcTaskResponse(
         task_id=record.task_id,
-        dialogue=result["dialogue"],
-        task_script=result["task_script"],
-        behavior_plan=result["behavior_plan"],
+        dialogue=result['dialogue'],
+        task_script=result['task_script'],
+        behavior_plan=result['behavior_plan'],
     )
-
 
 @app.post("/agents/feedback/{task_id}")
 def submit_feedback(task_id: str, comment: str) -> dict:

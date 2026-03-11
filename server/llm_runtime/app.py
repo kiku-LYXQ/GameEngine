@@ -36,7 +36,7 @@ async def warmup() -> None:
     logger.info("Registering default models... (vLLM / Qwen)")
     registry.register(ModelInfo(name="game-qwen-7b", base_model="qwen-7b", status="ready", tags=["chat", "code"]))
     registry.register(ModelInfo(name="game-deepseek-13b", base_model="deepseek-13b", status="ready", tags=["code"]))
-
+    registry.register(ModelInfo(name="npc-dialogue-7b", base_model="npc-dialogue-7b", status="ready", tags=["npc", "dialogue"]))
 
 def _build_choice(text: str) -> Choice:
     return Choice(text=text, finish_reason="stop")

@@ -75,3 +75,42 @@ class NpcTaskResponse(BaseModel):
     dialogue: List[str]
     task_script: str
     behavior_plan: Dict[str, str]
+
+
+class CopilotFile(BaseModel):
+    path: str
+    content: str
+
+
+class CopilotGenerateRequest(BaseModel):
+    prompt: str
+    context: Dict[str, str]
+    schema: str = "code"
+    max_tokens: int = 512
+
+
+class CopilotGenerateResponse(BaseModel):
+    files: List[CopilotFile]
+    summary: str
+    diagnostics: List[str] = []
+
+
+class CopilotExplainRequest(BaseModel):
+    blueprint_id: str
+    nodes: List[str]
+    question: str
+
+
+class CopilotExplainResponse(BaseModel):
+    explanation: str
+    steps: List[str]
+    related_assets: List[str]
+
+
+class CopilotAssetSearchRequest(BaseModel):
+    keywords: List[str]
+    filters: Dict[str, str] = {}
+
+
+class CopilotAssetSearchResponse(BaseModel):
+    matches: List[Dict[str, str]]

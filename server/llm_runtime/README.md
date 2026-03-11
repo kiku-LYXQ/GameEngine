@@ -6,7 +6,7 @@
 ## 目录指南
 - `app.py`：FastAPI 应用，暴露 `/v1/completions`, `/v1/chat/completions`, `/models`, `/models/{name}/lora`, `/metrics` 等接口。接口使用 `models.py` 中的 Pydantic schema，返回模拟结果。
 - `models.py`：定义 Completion/Chat/Model/LoRA 请求与响应 schema，保持与 OpenAI 兼容结构。
-- `registry.py`：内存 ModelRegistry，可注册/查询模型。默认注册 `game-qwen-7b`、`game-deepseek-13b`。
+- `registry.py`：内存 ModelRegistry，可注册/查询模型。默认注册 `game-qwen-7b`、`game-deepseek-13b`、`npc-dialogue-7b`（用于 NPC flow）。
 - `lora.py`：LoRA Job 管理器，用于调度({`started_at`, `job_id`} ) stub。Logs + metrics 由 `metrics.py` 触发。
 - `metrics.py`：简单的 counter store，可在 `/metrics` 查看 `completions.requests`, `chat.responses`, `lora.jobs_started` 等。
 - `tests/test_app.py`：使用 FastAPI TestClient 验证核心端点能正确返回 HTTP 200。
