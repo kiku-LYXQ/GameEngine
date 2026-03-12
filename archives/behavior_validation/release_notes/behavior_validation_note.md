@@ -19,5 +19,5 @@
 
 ### Agent health response
 ```json
-{"detail":"Not Found"}
+{"agent":{"status":"ok","queue_depth":0},"llm":{"status":"ok","availability":"ok"}}
 ```
