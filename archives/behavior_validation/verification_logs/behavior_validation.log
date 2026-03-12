@@ -61,14 +61,12 @@ Behavior analysis finished
 }
 [behavior-verify] Step 3/5: 采集运行指标
 [behavior-verify] Collecting LLM metrics via curl http://127.0.0.1:7001/metrics
-[behavior-verify] Warning: 无法获取 LLM metrics（curl exit 7），使用占位符
+[behavior-verify] LLM metrics 收集完毕，curl exit 0
 [behavior-verify] LLM 运行指标已保存至 /home/lxy/.openclaw/workspace-architect/GameEngine/archives/behavior_validation/runtime_metrics/llm_metrics.json
-{"error":"LLM metrics unavailable","curl_exit":7}
+{}
 [behavior-verify] Collecting agent health metrics via curl http://127.0.0.1:7000/health/metrics
-[behavior-verify] Warning: agent health metrics request failed（curl exit 7）
-[behavior-verify] Agent health/metrics 返回 HTTP 000（查看 /home/lxy/.openclaw/workspace-architect/GameEngine/archives/behavior_validation/runtime_metrics/agent_health_metrics.json）
-{"error":"agent health metrics unavailable","curl_exit":7}
-[behavior-verify] Step 4/5: 生成发布说明
+[behavior-verify] Agent health/metrics 返回 HTTP 404（查看 /home/lxy/.openclaw/workspace-architect/GameEngine/archives/behavior_validation/runtime_metrics/agent_health_metrics.json）
+{"detail":"Not Found"}[behavior-verify] Step 4/5: 生成发布说明
 [behavior-verify] 发布说明写入 /home/lxy/.openclaw/workspace-architect/GameEngine/archives/behavior_validation/release_notes/behavior_validation_note.md
 [behavior-verify] Step 5/5: 总结输出
 [behavior-verify] 验证脚本完成，指标 JSON 将作为最后输出

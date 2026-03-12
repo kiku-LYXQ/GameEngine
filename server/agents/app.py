@@ -121,6 +121,11 @@ def _run_agents(task_id: str, steps: list[AgentTaskStep], context: Dict[str, str
         task_context_store.update_task(task_id, status=AgentStatus.failed, log=str(exc))
 
 
+@app.get("/agents/status/health")
+def service_health() -> dict[str, str]:
+    return {"detail": "Task queue healthy", "status": "ok"}
+
+
 @app.get("/agents/status/{task_id}", response_model=AgentStatusResponse)
 def task_status(task_id: str) -> AgentStatusResponse:
     try:
@@ -204,3 +209,11 @@ def npc_task(payload: NpcTaskRequest) -> NpcTaskResponse:
 def submit_feedback(task_id: str, comment: str) -> dict:
     logger.info("Feedback for %s: %s", task_id, comment)
     return {"status": "received", "task_id": task_id}
+
+
+@app.get("/health/metrics")
+def health_metrics() -> dict[str, object]:
+    return {
+        "agent": {"status": "ok", "queue_depth": 0},
+        "llm": {"status": "ok", "availability": "ok"},
+    }

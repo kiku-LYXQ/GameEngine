@@ -14,10 +14,10 @@
 
 ### Metrics (LLM runtime)
 ```json
-{"error":"LLM metrics unavailable","curl_exit":7}
+{}
 ```
 
 ### Agent health response
 ```json
-{"error":"agent health metrics unavailable","curl_exit":7}
+{"detail":"Not Found"}
 ```
