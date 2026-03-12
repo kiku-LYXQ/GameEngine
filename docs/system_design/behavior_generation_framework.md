@@ -56,7 +56,7 @@ Developers can also point tooling at `behavior_spec_example.json` when they need
 
 ## Copilot Template Generation & Blueprint Binding
 
-`AI_Copilot` now drives a `BehaviorTemplateGenerator` inside the plugin. When a BehaviorSpec payload is attached to a Copilot response, the generator writes a `[Class].h`/`.cpp` skeleton, a `_BindingPlan.txt`, and a `_Manifest.txt` into `generated/behavior_templates/` (also accessible via the legacy `GeneratedBehaviorTemplates/` symlink). The binding plan documents the Blueprint inheritance strategy, logs the BehaviorSpec ID, and walks the Blueprint developer through wiring the generated `Execute<Hook>Hook` helpers together with the resource slots listed below. The manifest mirrors those paths and summarizes the resource reservations so reviewers can trace every artifact back to the spec.
+`AI_Copilot` now drives a `BehaviorTemplateGenerator` inside the plugin. When a BehaviorSpec payload is attached to a Copilot response, the generator writes a `[Class].h`/`.cpp` skeleton, a `_BindingPlan.txt`, and a `_Manifest.txt` into `generated/behavior_templates/`. The binding plan documents the Blueprint inheritance strategy, logs the BehaviorSpec ID, and walks the Blueprint developer through wiring the generated `Execute<Hook>Hook` helpers together with the resource slots listed below. The manifest mirrors those paths and summarizes the resource reservations so reviewers can trace every artifact back to the spec.
 
 ### Blueprint Binding Hints & Reserved Slots
 

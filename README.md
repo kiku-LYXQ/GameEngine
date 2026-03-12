@@ -3,7 +3,7 @@
 This workspace organizes AI/Unreal artifacts, verification evidence, and supporting services to keep generated outputs and logs easy to find.
 
 ## Top-level directories
-- `generated/behavior_templates` – canonical BehaviorTemplateGenerator output (skeleton `.h`/`.cpp`, binding plans, manifest) now exposed under `GeneratedBehaviorTemplates` via a symlink for compatibility.
+- `generated/behavior_templates` – canonical BehaviorTemplateGenerator output (skeleton `.h`/`.cpp`, binding plans, manifest).
 - `archives/behavior_validation` – archival evidence produced by `scripts/verify_behavior.sh` (`generated_code/`, `verification_logs/`, `runtime_metrics/`, `release_notes/`). Treat this as the single source of truth for reviewer artifacts.
 - `logs/verification` – symlink pointing to `archives/behavior_validation/verification_logs` so verification builds are accessible from the logs folder as well.
 - `docs/` – design and verification guidance (`system_design/behavior_generation_framework.md`, `verification/behavior_validation.md`, etc.).
