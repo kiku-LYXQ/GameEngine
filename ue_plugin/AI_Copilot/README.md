@@ -8,11 +8,11 @@
 
 ## 模块说明
 - `AI_Copilot.Build.cs`：声明依赖模块（Slate、Http 等）
-- `AI_Copilot.cpp/h`：模块生命周期，当前仅输出 log（可扩展为注册 toolbar、Slate UI）
-- `CopilotPanel`：Slate 面板 placeholder，可在未来加入 Slate 构建逻辑
+- `AI_Copilot.cpp/h`：模块生命周期，注册 toolbar 与 Slate 面板（包括 CopilotPanel UI）。
+- `CopilotPanel`：Slate 面板入口，当前已提供 `Generate Behavior Template` 按钮、资源卡片、health indicator 可视化与 log 输出逻辑。
 - `CopilotHttpClient`：负责向 `api/copilot/*` 发起请求
 
-## HTTP API 模板
+## HTTP API 模板 & 功能概述
 ### 1. 代码生成
 ```json
 POST /api/copilot/generate
@@ -66,6 +66,11 @@ POST /api/copilot/asset-search
 - 每次调用用 `FCopilotHttpClient::PostRequest` 包装，并传入 `request_id` + `context`，失败时在 editor log 中输出 friendly message，必要时弹出 notification。
 - HTTP 超时或状态码非 200 时，重复请求 2 次（exponential backoff），如果仍失败则提示“AI 服务暂不可用”。
 - 插件在 `GameDevAI/CopilotLogs` 写入 `prompt_hash`, `response_hash`, `latency_ms`，并允许开发者通过设置关闭 telemetry。
+
+# Copilot Panel 实现概览
+
+- Copilot Panel 当前通过 Slate 实现，显示 template 按钮、resource cards、log window 与 status indicators。点击 `Generate Behavior Template` 会调用 `/api/copilot/generate`，将生成的 `.h/.cpp`、binding plan、manifest 写入 `generated/behavior_templates/` 并把路径回显在 UI；manifest 也记载 resource slots/BehaviorHooks 以供 Blueprint 开发者参考。
+- Panel 还会实时请求 `/agents/status/health`、`/agents/capabilities`、`/health/metrics`，在 UI 中展示 capability stats，如 success rate/latency，并在任一 endpoint 不可用时灰显生成按钮并建议运行 `scripts/verify_behavior.sh`。
 
 ## 模板与资源卡片
 - Copilot Panel 提供预置模板（Sprint Ability、Dialogue Event 等），点选模板可以自动注入参数与 context，并展示推荐资源路径（Blueprint、VFX、音效）。
