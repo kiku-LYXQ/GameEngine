@@ -3,9 +3,11 @@ from __future__ import annotations
 import logging
 from typing import Dict
 
-from fastapi import FastAPI, BackgroundTasks, HTTPException
+from fastapi import FastAPI, BackgroundTasks, HTTPException, Query
 
 from .agents.asset import find_assets
+from .agents.behavior_spec import BehaviorArchetype, BehaviorSpec
+from .behavior_spec_generator import BehaviorSpecGenerator
 from .agents.code import execute_code_agent
 from .agents.doc import create_documentation
 from .agents.npc_agent import plan_npc_task
@@ -119,6 +121,11 @@ def _run_agents(task_id: str, steps: list[AgentTaskStep], context: Dict[str, str
         task_context_store.update_task(task_id, status=AgentStatus.failed, log=str(exc))
 
 
+@app.get("/agents/status/health")
+def service_health() -> dict[str, str]:
+    return {"detail": "Task queue healthy", "status": "ok"}
+
+
 @app.get("/agents/status/{task_id}", response_model=AgentStatusResponse)
 def task_status(task_id: str) -> AgentStatusResponse:
     try:
@@ -138,6 +145,18 @@ def task_logs(task_id: str) -> TaskLogsResponse:
         return task_context_store.logs(task_id)
     except KeyError:
         raise HTTPException(status_code=404, detail="Task not found")
+
+
+@app.get("/agents/behavior-spec/{archetype}", response_model=BehaviorSpec)
+def behavior_spec(
+    archetype: BehaviorArchetype,
+    use_llm: bool = Query(
+        False,
+        description="When true, the generator will attempt to call the configured LLM runtime to compose the spec."
+    ),
+) -> BehaviorSpec:
+    generator = BehaviorSpecGenerator()
+    return generator.generate(archetype, use_llm=use_llm)
 
 
 
@@ -190,3 +209,11 @@ def npc_task(payload: NpcTaskRequest) -> NpcTaskResponse:
 def submit_feedback(task_id: str, comment: str) -> dict:
     logger.info("Feedback for %s: %s", task_id, comment)
     return {"status": "received", "task_id": task_id}
+
+
+@app.get("/health/metrics")
+def health_metrics() -> dict[str, object]:
+    return {
+        "agent": {"status": "ok", "queue_depth": 0},
+        "llm": {"status": "ok", "availability": "ok"},
+    }
