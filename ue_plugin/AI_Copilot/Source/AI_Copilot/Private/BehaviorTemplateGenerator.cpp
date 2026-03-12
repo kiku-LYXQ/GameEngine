@@ -12,7 +12,7 @@ namespace
 {
 static TArray<FResourceSlotDescriptor> BuildResourceSlots()
 {
-    TArray<FBehaviorTemplateGenerator::FResourceSlotDescriptor> Slots;
+    TArray<FResourceSlotDescriptor> Slots;
     Slots.Add({TEXT("StaticMesh"), TEXT("StaticMeshSlot"), TEXT("UStaticMesh*"), TEXT("class UStaticMesh;"), TEXT("用于 Blueprint 绑定的 StaticMesh"), false});
     Slots.Add({TEXT("SkeletalMesh"), TEXT("SkeletalMeshSlot"), TEXT("USkeletalMesh*"), TEXT("class USkeletalMesh;"), TEXT("用于 SkeletalMesh 绑定"), false});
     Slots.Add({TEXT("AnimationMontage"), TEXT("MontageSlot"), TEXT("UAnimMontage*"), TEXT("class UAnimMontage;"), TEXT("AnimationMontage 用于动作切片"), false});
@@ -25,7 +25,7 @@ static TArray<FResourceSlotDescriptor> BuildResourceSlots()
 
 const TArray<FResourceSlotDescriptor>& ResourceSlotDescriptors()
 {
-    static TArray<FBehaviorTemplateGenerator::FResourceSlotDescriptor> Slots = BuildResourceSlots();
+    static TArray<FResourceSlotDescriptor> Slots = BuildResourceSlots();
     return Slots;
 }
 }
@@ -207,7 +207,7 @@ bool FBehaviorTemplateGenerator::GenerateSkeleton(const FBehaviorSpecDefinition&
     return true;
 }
 
-const TArray<FBehaviorTemplateGenerator::FResourceSlotDescriptor>& FBehaviorTemplateGenerator::GetResourceSlotDescriptors()
+const TArray<FResourceSlotDescriptor>& FBehaviorTemplateGenerator::GetResourceSlotDescriptors()
 {
     return ResourceSlotDescriptors();
 }

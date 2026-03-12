@@ -1,5 +1,5 @@
-#include "BehaviorTemplateGenerator.h"
 #include "CopilotPanel.h"
+#include "BehaviorTemplateGenerator.h"
 #include "CopilotHttpClient.h"
 
 #include "HttpModule.h"
