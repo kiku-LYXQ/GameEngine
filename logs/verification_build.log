@@ -1,0 +1,31 @@
+Verification Build Log
+Timestamp: Thu Mar 12 20:12:08 CST 2026
+
+Commands executed:
+- curl http://127.0.0.1:7000/agents/status/health  (HTTP_CODE: 404)
+  Output: {"detail":"Task not found"}
+- curl http://127.0.0.1:7001/metrics  (HTTP_CODE: 200)
+  Output: {"evaluation.requests":1}
+
+Service processes (live):
+- PID 3307231: python3 -m uvicorn server.agents.app:app --host 127.0.0.1 --port 7000
+- PID 3307268: python3 -m uvicorn server.llm_runtime.app:app --host 127.0.0.1 --port 7001
+
+Service start logs:
+- /tmp/agents.log:
+  INFO:     Started server process [3514005]
+  INFO:     Waiting for application startup.
+  INFO:     Application startup complete.
+  ERROR:    [Errno 98] error while attempting to bind on address ('127.0.0.1', 7000): [errno 98] address already in use
+  INFO:     Waiting for application shutdown.
+  INFO:     Application shutdown complete.
+- /tmp/llm.log:
+  INFO:     Started server process [3514008]
+  INFO:     Waiting for application startup.
+  INFO:     Application startup complete.
+  ERROR:    [Errno 98] error while attempting to bind on address ('127.0.0.1', 7001): [errno 98] address already in use
+  INFO:     Waiting for application shutdown.
+  INFO:     Application shutdown complete.
+
+Metrics snapshot (from validation log):
+{"evaluation.requests":1}

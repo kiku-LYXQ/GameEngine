@@ -1,0 +1,98 @@
+Starting verification suite...
+1. Ensure services are running (agent + llm).
+2. Copilot smoke test
+1. Check agent capabilities
+{
+  "capabilities": [
+    {
+      "name": "Planner",
+      "description": "Analyzes prompts and fetches project context.",
+      "success_rate": 0.95,
+      "avg_latency_ms": 180,
+      "avg_tokens": 80
+    },
+    {
+      "name": "Code",
+      "description": "Generates C++/Blueprint artifacts with contextual scaffolds.",
+      "success_rate": 0.92,
+      "avg_latency_ms": 420,
+      "avg_tokens": 190
+    },
+    {
+      "name": "Asset",
+      "description": "Locates assets via Vector Asset Index + Content browser metadata.",
+      "success_rate": 0.9,
+      "avg_latency_ms": 210,
+      "avg_tokens": 130
+    },
+    {
+      "name": "Doc",
+      "description": "Synthesizes design docs and behavior notes.",
+      "success_rate": 0.98,
+      "avg_latency_ms": 230,
+      "avg_tokens": 100
+    },
+    {
+      "name": "NPC",
+      "description": "Generates NPC dialogue, tasks, and behavior plans.",
+      "success_rate": 0.9,
+      "avg_latency_ms": 480,
+      "avg_tokens": 220
+    }
+  ]
+}
+2. Fire simple agent task
+3. Poll task status
+Attempt 1 status=done
+4. Fetch task logs
+{
+  "task_id": "ceb6aa8d-6b6e-40b4-89cd-a5ec685220f3",
+  "logs": [
+    "Planner started",
+    "Code agent executing",
+    "analysis done: Generated placeholder code for analysis.",
+    "code done: Generated placeholder code for code.",
+    "assets done: Content/VFX/explosion_fx, Content/VFX/player_fx",
+    "docs done: Documentation stub for docs.",
+    "Task completed"
+  ]
+}
+5. Trigger Copilot payload
+{
+  "files": [
+    {
+      "path": "Source/Gameplay/Abilities/UAbility_Sprint.cpp",
+      "content": "// generated sprint ability code"
+    }
+  ],
+  "summary": "Generated sprint ability module",
+  "diagnostics": []
+}
+6. Check LLM runtime metrics
+{}
+Validation scripts completed.3. NPC smoke test
+1. Run NPC task
+2. Fetch NPC logs
+{
+  "task_id": "03f16859-b40e-408d-a9ae-e06fcdcc44a9",
+  "logs": [
+    "NPC agent planning",
+    "NPC agent completed"
+  ]
+}
+3. Evaluate NPC dialogue model
+{
+  "model": "npc-dialogue-7b",
+  "score": 0.82,
+  "details": {
+    "coherence": 0.87,
+    "safety": 0.95
+  }
+}
+4. Confirm LLM metrics
+{
+  "evaluation.requests": 1
+}
+NPC validation complete.
+4. Metrics snapshot
+{"evaluation.requests":1}Validation suite completed.
