@@ -591,13 +591,11 @@ void SCopilotPanel::HandleCopilotResponse(FHttpRequestPtr Req, FHttpResponsePtr 
                 Files.Add(MakeShared<FString>(TemplateResultHolder.BindingPlanPath));
                 Files.Add(MakeShared<FString>(TemplateResultHolder.ManifestPath));
                 bGeneratedTemplate = true;
-                Summary += TEXT("
-Blueprint binding plan, skeleton, and manifest generated in output directory.");
-                if (!TemplateResultHolder.SpecId.IsEmpty())
-                {
-                    Summary += FString::Printf(TEXT("
-Spec ID: %s"), *TemplateResultHolder.SpecId);
-                }
+		Summary += TEXT("\nBlueprint binding plan, skeleton, and manifest generated in output directory.");
+		if (!TemplateResultHolder.SpecId.IsEmpty())
+		{
+			Summary += FString::Printf(TEXT("\nSpec ID: %s"), *TemplateResultHolder.SpecId);
+		}
             }
             else
             {
