@@ -1,0 +1,74 @@
+[behavior-verify] Starting behavior verification pipeline
+[behavior-verify] Spec provided: /home/lxy/.openclaw/workspace-architect/GameEngine/behavior_spec.json
+[behavior-verify] Step 1/5: 语法 & 代码有效性检验
+[behavior-verify] Code validity check finished (details in /home/lxy/.openclaw/workspace-architect/GameEngine/archives/behavior_validation/verification_logs/code_validity.log)
+[behavior-verify] Step 2/5: 行为规范、资源与绑定一致性分析
+[behavior-verify] Behavior analysis complete (see /home/lxy/.openclaw/workspace-architect/GameEngine/archives/behavior_validation/verification_logs/behavior_analysis.log and /home/lxy/.openclaw/workspace-architect/GameEngine/archives/behavior_validation/generated_code/behavior_plan.json)
+Behavior analysis finished
+{
+  "spec": "behavior_spec.json",
+  "behavior_id": "demo-behavior",
+  "behavior_name": "Demo Behavior",
+  "step_count": 3,
+  "resource_count": 2,
+  "binding_count": 2,
+  "steps": [
+    {
+      "name": "Detect Target",
+      "type": "perception",
+      "target": "primary_enemy"
+    },
+    {
+      "name": "Navigate To Cover",
+      "type": "navigation",
+      "target": "movement"
+    },
+    {
+      "name": "Engage",
+      "type": "combat",
+      "target": "primary_enemy"
+    }
+  ],
+  "resources": [
+    {
+      "name": "primary_enemy",
+      "type": "character",
+      "path": "/Game/Characters/EnemyBoss",
+      "tags": null
+    },
+    {
+      "name": "cover_slot",
+      "type": "environment",
+      "path": "/Game/Props/Cover/CoverBase",
+      "tags": [
+        "tactical",
+        "reusable"
+      ]
+    }
+  ],
+  "bindings": [
+    {
+      "behavior": "demo-behavior",
+      "resource": "primary_enemy",
+      "mode": "read"
+    },
+    {
+      "behavior": "demo-behavior",
+      "resource": "cover_slot",
+      "mode": "reserve"
+    }
+  ]
+}
+[behavior-verify] Step 3/5: 采集运行指标
+[behavior-verify] Collecting LLM metrics via curl http://127.0.0.1:7001/metrics
+[behavior-verify] Warning: 无法获取 LLM metrics（curl exit 7），使用占位符
+[behavior-verify] LLM 运行指标已保存至 /home/lxy/.openclaw/workspace-architect/GameEngine/archives/behavior_validation/runtime_metrics/llm_metrics.json
+{"error":"LLM metrics unavailable","curl_exit":7}
+[behavior-verify] Collecting agent health metrics via curl http://127.0.0.1:7000/health/metrics
+[behavior-verify] Warning: agent health metrics request failed（curl exit 7）
+[behavior-verify] Agent health/metrics 返回 HTTP 000（查看 /home/lxy/.openclaw/workspace-architect/GameEngine/archives/behavior_validation/runtime_metrics/agent_health_metrics.json）
+{"error":"agent health metrics unavailable","curl_exit":7}
+[behavior-verify] Step 4/5: 生成发布说明
+[behavior-verify] 发布说明写入 /home/lxy/.openclaw/workspace-architect/GameEngine/archives/behavior_validation/release_notes/behavior_validation_note.md
+[behavior-verify] Step 5/5: 总结输出
+[behavior-verify] 验证脚本完成，指标 JSON 将作为最后输出

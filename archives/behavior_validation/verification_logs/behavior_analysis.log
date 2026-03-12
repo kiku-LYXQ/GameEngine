@@ -1,0 +1,55 @@
+Behavior analysis finished
+{
+  "spec": "behavior_spec.json",
+  "behavior_id": "demo-behavior",
+  "behavior_name": "Demo Behavior",
+  "step_count": 3,
+  "resource_count": 2,
+  "binding_count": 2,
+  "steps": [
+    {
+      "name": "Detect Target",
+      "type": "perception",
+      "target": "primary_enemy"
+    },
+    {
+      "name": "Navigate To Cover",
+      "type": "navigation",
+      "target": "movement"
+    },
+    {
+      "name": "Engage",
+      "type": "combat",
+      "target": "primary_enemy"
+    }
+  ],
+  "resources": [
+    {
+      "name": "primary_enemy",
+      "type": "character",
+      "path": "/Game/Characters/EnemyBoss",
+      "tags": null
+    },
+    {
+      "name": "cover_slot",
+      "type": "environment",
+      "path": "/Game/Props/Cover/CoverBase",
+      "tags": [
+        "tactical",
+        "reusable"
+      ]
+    }
+  ],
+  "bindings": [
+    {
+      "behavior": "demo-behavior",
+      "resource": "primary_enemy",
+      "mode": "read"
+    },
+    {
+      "behavior": "demo-behavior",
+      "resource": "cover_slot",
+      "mode": "reserve"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "behavior": {
+    "id": "demo-behavior",
+    "name": "Demo Behavior",
+    "description": "用于验证行为管线的最小示例",
+    "steps": [
+      {
+        "name": "Detect Target",
+        "type": "perception",
+        "target": "primary_enemy"
+      },
+      {
+        "name": "Navigate To Cover",
+        "type": "navigation",
+        "phase": "movement"
+      },
+      {
+        "name": "Engage",
+        "type": "combat",
+        "target": "primary_enemy"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "name": "primary_enemy",
+      "type": "character",
+      "path": "/Game/Characters/EnemyBoss"
+    },
+    {
+      "name": "cover_slot",
+      "type": "environment",
+      "path": "/Game/Props/Cover/CoverBase",
+      "tags": ["tactical", "reusable"]
+    }
+  ],
+  "bindings": [
+    {
+      "behavior": "demo-behavior",
+      "resource": "primary_enemy",
+      "mode": "read"
+    },
+    {
+      "behavior": "demo-behavior",
+      "resource": "cover_slot",
+      "mode": "reserve"
+    }
+  ]
+}
