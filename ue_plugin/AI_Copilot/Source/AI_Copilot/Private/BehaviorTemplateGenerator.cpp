@@ -10,7 +10,7 @@
 
 namespace
 {
-static TArray<FBehaviorTemplateGenerator::FResourceSlotDescriptor> BuildResourceSlots()
+static TArray<FResourceSlotDescriptor> BuildResourceSlots()
 {
     TArray<FBehaviorTemplateGenerator::FResourceSlotDescriptor> Slots;
     Slots.Add({TEXT("StaticMesh"), TEXT("StaticMeshSlot"), TEXT("UStaticMesh*"), TEXT("class UStaticMesh;"), TEXT("用于 Blueprint 绑定的 StaticMesh"), false});
@@ -23,7 +23,7 @@ static TArray<FBehaviorTemplateGenerator::FResourceSlotDescriptor> BuildResource
     return Slots;
 }
 
-const TArray<FBehaviorTemplateGenerator::FResourceSlotDescriptor>& ResourceSlotDescriptors()
+const TArray<FResourceSlotDescriptor>& ResourceSlotDescriptors()
 {
     static TArray<FBehaviorTemplateGenerator::FResourceSlotDescriptor> Slots = BuildResourceSlots();
     return Slots;

@@ -25,6 +25,16 @@ struct FBehaviorTemplateGenerationResult
     FString SpecId;
 };
 
+struct FResourceSlotDescriptor
+{
+    FString SlotKey;
+    FString PropertyName;
+    FString TypeName;
+    FString ForwardDeclaration;
+    FString Description;
+    bool bIsClassSlot;
+};
+
 class FBehaviorTemplateGenerator
 {
 public:
@@ -33,16 +43,6 @@ public:
     static FString GetOutputDirectory();
 
 private:
-    struct FResourceSlotDescriptor
-    {
-        FString SlotKey;
-        FString PropertyName;
-        FString TypeName;
-        FString ForwardDeclaration;
-        FString Description;
-        bool bIsClassSlot;
-    };
-
     static const TArray<FResourceSlotDescriptor>& GetResourceSlotDescriptors();
     static FString NormalizeClassName(const FString& Candidate);
     static FString DetermineBaseClass(const FString& Archetype);
