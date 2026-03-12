@@ -1,3 +1,4 @@
+#include "BehaviorTemplateGenerator.h"
 #include "CopilotPanel.h"
 #include "CopilotHttpClient.h"
 
@@ -562,6 +563,9 @@ void SCopilotPanel::HandleCopilotResponse(FHttpRequestPtr Req, FHttpResponsePtr 
 
     FString Summary = Root->GetStringField(TEXT("summary"));
     TArray<TSharedPtr<FString>> Files;
+    FBehaviorTemplateGenerationResult TemplateResultHolder;
+    bool bGeneratedTemplate = false;
+    FString TemplateError;
     const TArray<TSharedPtr<FJsonValue>>* FileArray;
     if (Root->TryGetArrayField(TEXT("files"), FileArray))
     {
@@ -574,9 +578,52 @@ void SCopilotPanel::HandleCopilotResponse(FHttpRequestPtr Req, FHttpResponsePtr 
         }
     }
 
-    AsyncTask(ENamedThreads::GameThread, [this, Summary = MoveTemp(Summary), Files = MoveTemp(Files)]() mutable {
+    const TSharedPtr<FJsonObject>* BehaviorSpec = nullptr;
+    if (Root->TryGetObjectField(TEXT("behavior_spec"), BehaviorSpec))
+    {
+        FBehaviorSpecDefinition Spec;
+        if (FBehaviorTemplateGenerator::TryParseBehaviorSpec(*BehaviorSpec, Spec))
+        {
+            if (FBehaviorTemplateGenerator::GenerateSkeleton(Spec, TemplateResultHolder))
+            {
+                Files.Add(MakeShared<FString>(TemplateResultHolder.HeaderPath));
+                Files.Add(MakeShared<FString>(TemplateResultHolder.SourcePath));
+                Files.Add(MakeShared<FString>(TemplateResultHolder.BindingPlanPath));
+                Files.Add(MakeShared<FString>(TemplateResultHolder.ManifestPath));
+                bGeneratedTemplate = true;
+                Summary += TEXT("
+Blueprint binding plan, skeleton, and manifest generated in output directory.");
+                if (!TemplateResultHolder.SpecId.IsEmpty())
+                {
+                    Summary += FString::Printf(TEXT("
+Spec ID: %s"), *TemplateResultHolder.SpecId);
+                }
+            }
+            else
+            {
+                TemplateError = TEXT("Behavior template generation failed；请查看日志输出。");
+            }
+        }
+        else
+        {
+            TemplateError = TEXT("无法解析 BehaviorSpec，生成跳过。");
+        }
+    }
+
+    AsyncTask(ENamedThreads::GameThread, [this, Summary = MoveTemp(Summary), Files = MoveTemp(Files), TemplateResult = MoveTemp(TemplateResultHolder), bGeneratedTemplate, TemplateError = MoveTemp(TemplateError)]() mutable {
         UpdateCopilotResult(Summary, Files);
         AppendLog(TEXT("Copilot rendered result"));
+        if (bGeneratedTemplate)
+        {
+            const FString LogSpecId = TemplateResult.SpecId.IsEmpty() ? TEXT("unnamed spec") : TemplateResult.SpecId;
+            AppendLog(FString::Printf(TEXT("BehaviorSpec '%s' generated: header/source %s / %s"), *LogSpecId, *TemplateResult.HeaderPath, *TemplateResult.SourcePath));
+            AppendLog(FString::Printf(TEXT("Blueprint binding plan available at %s"), *TemplateResult.BindingPlanPath));
+            AppendLog(FString::Printf(TEXT("Blueprint manifest recorded at %s"), *TemplateResult.ManifestPath));
+        }
+        else if (!TemplateError.IsEmpty())
+        {
+            AppendLog(TemplateError);
+        }
     });
 }
 

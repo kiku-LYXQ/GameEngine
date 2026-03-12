@@ -1,0 +1,46 @@
+Blueprint Binding Plan
+----------------------
+Spec ID: ranger-sentinel-v1
+
+1. Blueprint Inheritance
+   • Create Blueprint BP_ARangerSentinelBehavior that inherits from ACharacter.
+   • Keep the generated C++ skeleton intact; Blueprint overrides should call the Execute<Hook>Hook helpers.
+   • OptionalBlueprintClass slot is reserved for injecting a variant Blueprint or actor subclass when needed.
+
+2. Resource Slot Guidance
+   • StaticMeshSlot (UStaticMesh*): 用于 Blueprint 绑定的 StaticMesh. 绑定提示: /Game/Characters/Ranger/SMesh_RangerBody
+   • SkeletalMeshSlot (USkeletalMesh*): 用于 SkeletalMesh 绑定. 绑定提示: /Game/Characters/Ranger/SK_Ranger
+   • MontageSlot (UAnimMontage*): AnimationMontage 用于动作切片. 绑定提示: /Game/Characters/Ranger/Montage_RangerAim
+   • NiagaraSlot (UNiagaraSystem*): Niagara 特效插槽. 绑定提示: /Game/FX/Ranger/ChargedTrail
+   • SoundCueSlot (USoundCue*): 声音提示插槽. 绑定提示: /Game/Audio/Ranger/ShotImpact
+   • MaterialSlot (UMaterialInterface*): 用于覆盖材质. 绑定提示: /Game/Materials/M_RangerArmor
+   • BlueprintClassSlot (TSubclassOf<AActor>): 可选 Blueprint 子类槽, 绑定提示: /Game/Blueprints/BP_RangerVariant
+
+3. Behavior Hook Execution Outline
+   · Blueprint 事件图或行为树节点应调用 Execute<Hook>Hook，确保资源槽在执行前就绪。
+   · 资源槽 StaticMeshSlot、SkeletalMeshSlot、AnimationMontage、NiagaraEffect、SoundCue、Material、OptionalBlueprintClass 可在钩子中提供插值素材。
+   1) OnSpawn – Initialize perception grid, apply stealth overlay, and report ready.
+      · 在 Blueprint Graph 或动画通知中调用 ExecuteOnSpawnHook，并通过上面的资源槽设置视觉/音频/特效。
+   2) OnTargetAcquired – Raise bow, align shots, and play charge FX.
+      · 在 Blueprint Graph 或动画通知中调用 ExecuteOnTargetAcquiredHook，并通过上面的资源槽设置视觉/音频/特效。
+   3) OnRetreat – Play vanish montage, spawn shields, and notify AI director.
+      · 在 Blueprint Graph 或动画通知中调用 ExecuteOnRetreatHook，并通过上面的资源槽设置视觉/音频/特效。
+
+4. Component Checklist
+   • Required components:
+     - CharacterMovementComponent
+     - AIControllerComponent
+     - HealthComponent
+   • Optional components:
+     - CoverComponent
+     - DialogueComponent
+
+5. Metadata & Routing
+   - spec_id: ranger-sentinel-v1
+   - domain: npc
+   - stability: high
+
+6. Verification Notes
+   · Copilot Panel 应记录 GeneratedBehaviorTemplates 目录下的 skeleton、binding plan、manifest 文件。
+   · 触发 curl http://127.0.0.1:7000/api/copilot/generate 并在日志中确认路径。
+   · 使用 curl http://127.0.0.1:7000/agents/status/health 确保服务可达。

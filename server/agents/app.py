@@ -7,7 +7,7 @@ from fastapi import FastAPI, BackgroundTasks, HTTPException, Query
 
 from .agents.asset import find_assets
 from .agents.behavior_spec import BehaviorArchetype, BehaviorSpec
-from .agents.behavior_spec_generator import BehaviorSpecGenerator
+from .behavior_spec_generator import BehaviorSpecGenerator
 from .agents.code import execute_code_agent
 from .agents.doc import create_documentation
 from .agents.npc_agent import plan_npc_task

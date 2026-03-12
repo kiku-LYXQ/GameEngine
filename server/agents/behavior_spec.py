@@ -175,3 +175,6 @@ def get_default_behavior_spec(archetype: BehaviorArchetype) -> BehaviorSpec:
     """Return the curated BehaviorSpec payload that backs the prompt example."""
     data = DEFAULT_BEHAVIOR_SPECS[archetype]
     return BehaviorSpec(**data)
+
+
+from .behavior_spec_generator import BehaviorSpecGenerator  # noqa: E402

@@ -54,6 +54,34 @@ Add `?use_llm=true` when an LLM runtime is available and you specifically want a
 
 Developers can also point tooling at `behavior_spec_example.json` when they need a persisted version of the canonical payloads without hitting the server.
 
+## Copilot Template Generation & Blueprint Binding
+
+`AI_Copilot` now drives a `BehaviorTemplateGenerator` inside the plugin. When a BehaviorSpec payload is attached to a Copilot response, the generator writes a `[Class].h`/`.cpp` skeleton, a `_BindingPlan.txt`, and a `_Manifest.txt` into `GeneratedBehaviorTemplates/`. The binding plan documents the Blueprint inheritance strategy, logs the BehaviorSpec ID, and walks the Blueprint developer through wiring the generated `Execute<Hook>Hook` helpers together with the resource slots listed below. The manifest mirrors those paths and summarizes the resource reservations so reviewers can trace every artifact back to the spec.
+
+### Blueprint Binding Hints & Reserved Slots
+
+The resource slots captured in the generated header remain reserved for Blueprint authors and show up as `UPROPERTY` hints in the skeleton, the binding plan, and the manifest:
+
+- **StaticMeshSlot (`UStaticMesh*`)** – bind the primary static mesh asset before any hooks run so the actor carries the right silhouette.
+- **SkeletalMeshSlot (`USkeletalMesh*`)** – the skeletal mesh that the animation hooks reference for retargeting and attachment.
+- **MontageSlot (`UAnimMontage*`)** – the montage slot the hooking logic triggers via `Execute<Hook>Hook` before playing actions such as attacks or hit reactions.
+- **NiagaraSlot (`UNiagaraSystem*`)** – reserved for ribbon trails, impact FX, or charged-ability motifs keyed to BehaviorHooks.
+- **SoundCueSlot (`USoundCue*`)** – binds the auditory feedback (damage shout, ability cast, etc.) referenced by the hook descriptions.
+- **MaterialSlot (`UMaterialInterface*`)** – overrides the material while the hooks coordinate decals, emissives, or blend transitions.
+- **BlueprintClassSlot (`TSubclassOf<AActor>`)** – reserved for injecting optional Blueprint/actor subclasses, letting the manifest cite `OptionalBlueprintClass` when a variant or decorator is desired.
+
+Each BehaviorHook section in the plan repeats how to call `Execute<Hook>Hook`, which Blueprint event to map, and which of the slots above should be set before or during that hook’s execution.
+
+### Verification via Copilot Panel
+
+Trigger the template pipeline the same way the Panel does:
+
+```
+curl http://127.0.0.1:7000/api/copilot/generate
+```
+
+The API response and CopilotPanel logs now mention the BehaviorSpec ID, list the generated skeleton/binding plan/manifest paths, and record those files under `GeneratedBehaviorTemplates/`. Confirm the HTTP stack is healthy before running the command (the manifest references both `curl http://127.0.0.1:7000/api/copilot/generate` and `curl http://127.0.0.1:7000/agents/status/health`). Reviewers can open the manifest to see the reserved slots, the BehaviorHooks summary, and the verification commands without touching the source generator again.
+
 ## Testing & Verification
 
 ### Verification Commands

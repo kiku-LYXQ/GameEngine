@@ -1,0 +1,46 @@
+Behavior Template Manifest
+--------------------------
+Spec ID: ranger-sentinel-v1
+Class: ARangerSentinelBehavior
+Base Class: ACharacter
+Blueprint: BP_ARangerSentinelBehavior
+
+Generated Files:
+   - GeneratedBehaviorTemplates/ARangerSentinelBehavior.h
+   - GeneratedBehaviorTemplates/ARangerSentinelBehavior.cpp
+   - GeneratedBehaviorTemplates/ARangerSentinelBehavior_BindingPlan.txt
+   - GeneratedBehaviorTemplates/ARangerSentinelBehavior_Manifest.txt
+
+Resource Slot Reservations:
+   - StaticMeshSlot (UStaticMesh*): 用于 Blueprint 绑定的 StaticMesh. 提示: /Game/Characters/Ranger/SMesh_RangerBody
+   - SkeletalMeshSlot (USkeletalMesh*): 用于 SkeletalMesh 绑定. 提示: /Game/Characters/Ranger/SK_Ranger
+   - MontageSlot (UAnimMontage*): AnimationMontage 用于动作切片. 提示: /Game/Characters/Ranger/Montage_RangerAim
+   - NiagaraSlot (UNiagaraSystem*): Niagara 特效插槽. 提示: /Game/FX/Ranger/ChargedTrail
+   - SoundCueSlot (USoundCue*): 声音提示插槽. 提示: /Game/Audio/Ranger/ShotImpact
+   - MaterialSlot (UMaterialInterface*): 用于覆盖材质. 提示: /Game/Materials/M_RangerArmor
+   - BlueprintClassSlot (TSubclassOf<AActor>): 可选 Blueprint 子类槽, 提示: /Game/Blueprints/BP_RangerVariant
+     · 该槽保留给 Blueprint/Actor 子类，便于注入运行时变体。
+
+Behavior Hooks Summary:
+   1) OnSpawn – Initialize perception grid, apply stealth overlay, and report ready.
+   2) OnTargetAcquired – Raise bow, align shots, and play charge FX.
+   3) OnRetreat – Play vanish montage, spawn shields, and notify AI director.
+
+Component Checklist:
+   • Required components:
+     - CharacterMovementComponent
+     - AIControllerComponent
+     - HealthComponent
+   • Optional components:
+     - CoverComponent
+     - DialogueComponent
+
+Metadata:
+   - spec_id: ranger-sentinel-v1
+   - domain: npc
+   - stability: high
+
+Verification Commands:
+   - curl http://127.0.0.1:7000/api/copilot/generate
+   - curl http://127.0.0.1:7000/agents/status/health
+
