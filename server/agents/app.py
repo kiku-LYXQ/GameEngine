@@ -3,9 +3,11 @@ from __future__ import annotations
 import logging
 from typing import Dict
 
-from fastapi import FastAPI, BackgroundTasks, HTTPException
+from fastapi import FastAPI, BackgroundTasks, HTTPException, Query
 
 from .agents.asset import find_assets
+from .agents.behavior_spec import BehaviorArchetype, BehaviorSpec
+from .agents.behavior_spec_generator import BehaviorSpecGenerator
 from .agents.code import execute_code_agent
 from .agents.doc import create_documentation
 from .agents.npc_agent import plan_npc_task
@@ -138,6 +140,18 @@ def task_logs(task_id: str) -> TaskLogsResponse:
         return task_context_store.logs(task_id)
     except KeyError:
         raise HTTPException(status_code=404, detail="Task not found")
+
+
+@app.get("/agents/behavior-spec/{archetype}", response_model=BehaviorSpec)
+def behavior_spec(
+    archetype: BehaviorArchetype,
+    use_llm: bool = Query(
+        False,
+        description="When true, the generator will attempt to call the configured LLM runtime to compose the spec."
+    ),
+) -> BehaviorSpec:
+    generator = BehaviorSpecGenerator()
+    return generator.generate(archetype, use_llm=use_llm)
 
 
 
