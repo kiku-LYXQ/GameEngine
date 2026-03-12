@@ -80,7 +80,15 @@ Trigger the template pipeline the same way the Panel does:
 curl http://127.0.0.1:7000/api/copilot/generate
 ```
 
-The API response and CopilotPanel logs now mention the BehaviorSpec ID, list the generated skeleton/binding plan/manifest paths, and record those files under `GeneratedBehaviorTemplates/`. Confirm the HTTP stack is healthy before running the command (the manifest references both `curl http://127.0.0.1:7000/api/copilot/generate` and `curl http://127.0.0.1:7000/agents/status/health`). Reviewers can open the manifest to see the reserved slots, the BehaviorHooks summary, and the verification commands without touching the source generator again.
+The API response and CopilotPanel logs now mention the BehaviorSpec ID, list the generated skeleton/binding plan/manifest paths, and record those files under `generated/behavior_templates/`. Confirm the HTTP stack is healthy before running the command (the manifest references both `curl http://127.0.0.1:7000/api/copilot/generate` and `curl http://127.0.0.1:7000/agents/status/health`). Reviewers can open the manifest to see the reserved slots, the BehaviorHooks summary, and the verification commands without touching the source generator again.
+
+### Copilot Panel (UI) Experience & Significance
+
+Within the UE editor, the Copilot Panel exposes this workflow behind a single `Generate Behavior Template` button. The panel automatically detects the currently selected BehaviorSpec (or Blueprint) and, when clicked, sends the same `curl` request above to emit the skeleton/binding plan/manifest into `generated/behavior_templates/`. The manifest path is surfaced directly in the panel so artists can open it instantly.
+
+Health indicators are also presented in the panel by polling `/agents/status/health`, `/agents/capabilities`, and `/health/metrics`. If any endpoint is unreachable, the generate button grays out and the UI prompts the user to rerun `scripts/verify_behavior.sh` to refresh the health data. After generation, resource slots (StaticMesh/SkeletalMesh/Montage/Niagara/SoundCue/Material/BlueprintClass) and BehaviorHooks are highlighted with usage tips, letting Blueprint authors map `Execute<Hook>Hook` events without staring at the raw `.txt` files.
+
+**Significance for UE newcomers**: The Copilot Panel removes the need to memorize curl commands or dig through directories. It records the BehaviorSpec ID, the generated paths, and the CLI health checks in one place, so reviewers, artists, or designers can trace every artifact back to the spec with no extra effort. Use the panel as the primary entry point—open the manifest/plan from the UI and follow the tips to wire the generated code into your Blueprint.
 
 ## Testing & Verification
 
