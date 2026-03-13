@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from typing import Dict
+from uuid import uuid4
 
 from fastapi import FastAPI, BackgroundTasks, HTTPException, Query
 
@@ -31,6 +32,8 @@ from .models import (
     CopilotFile,
     CopilotGenerateRequest,
     CopilotGenerateResponse,
+    CopilotBindingPlan,
+    CopilotManifestHint,
 )
 
 logger = logging.getLogger("server.agents")
@@ -160,12 +163,51 @@ def behavior_spec(
 
 
 
+def _resolve_behavior_archetype(context: Dict[str, str]) -> BehaviorArchetype:
+    raw = context.get("archetype")
+    if raw:
+        try:
+            return BehaviorArchetype(raw.lower())
+        except ValueError:
+            logger.warning("Unknown archetype '%s'; falling back to Character", raw)
+    return BehaviorArchetype.character
+
+
+def _build_binding_plan(spec: BehaviorSpec, spec_id: str) -> CopilotBindingPlan:
+    description = f"Blueprint binding plan for {spec.object_type} ({spec_id})"
+    steps = [
+        f"Create a Blueprint named BP_{spec_id} inheriting from the generated class.",
+        f"Wire Execute<Hook>Hook helpers for each behavior hook: {', '.join(spec.behavior_hooks.keys())}",
+        f"Assign resource slots: {', '.join(spec.resource_slots)} with valid assets before runtime.",
+        "Use the manifest to confirm reserved slots and validation targets.",
+    ]
+    return CopilotBindingPlan(description=description, steps=steps)
+
+
+def _build_manifest_hint(spec: BehaviorSpec, spec_id: str) -> CopilotManifestHint:
+    return CopilotManifestHint(
+        spec_id=spec_id,
+        resource_slots=spec.resource_slots,
+        behavior_hooks=list(spec.behavior_hooks.keys()),
+    )
+
+
 @app.post("/api/copilot/generate", response_model=CopilotGenerateResponse)
 def copilot_generate(payload: CopilotGenerateRequest) -> CopilotGenerateResponse:
-    file_path = payload.context.get('target_file', 'Source/Gameplay/Abilities/UAbility_Sprint.cpp')
+    archetype = _resolve_behavior_archetype(payload.context)
+    generator = BehaviorSpecGenerator()
+    spec = generator.generate(archetype, use_llm=False)
+    spec_id = payload.context.get("spec_id") or f"{archetype.value}-{uuid4().hex[:6]}"
+    binding_plan = _build_binding_plan(spec, spec_id)
+    manifest_hint = _build_manifest_hint(spec, spec_id)
+    file_path = payload.context.get("target_file", "Source/Gameplay/Abilities/UAbility_Sprint.cpp")
+    summary = payload.context.get("summary", "Generated sprint ability module")
     return CopilotGenerateResponse(
-        files=[CopilotFile(path=file_path, content='// generated sprint ability code')],
-        summary='Generated sprint ability module',
+        files=[CopilotFile(path=file_path, content="// generated sprint ability code")],
+        summary=summary,
+        behavior_spec=spec,
+        binding_plan=binding_plan,
+        manifest_hint=manifest_hint,
         diagnostics=[],
     )
 

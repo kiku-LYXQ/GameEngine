@@ -6,6 +6,8 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 
+from .behavior_spec import BehaviorSpec
+
 
 class AgentStatus(str, Enum):
     pending = "pending"
@@ -89,9 +91,23 @@ class CopilotGenerateRequest(BaseModel):
     max_tokens: int = 512
 
 
+class CopilotBindingPlan(BaseModel):
+    description: str
+    steps: List[str]
+
+
+class CopilotManifestHint(BaseModel):
+    spec_id: str
+    resource_slots: List[str]
+    behavior_hooks: List[str]
+
+
 class CopilotGenerateResponse(BaseModel):
     files: List[CopilotFile]
     summary: str
+    behavior_spec: BehaviorSpec
+    binding_plan: CopilotBindingPlan
+    manifest_hint: CopilotManifestHint
     diagnostics: List[str] = []
 
 

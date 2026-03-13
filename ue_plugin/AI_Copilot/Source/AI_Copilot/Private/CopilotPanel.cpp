@@ -615,8 +615,10 @@ void SCopilotPanel::HandleCopilotResponse(FHttpRequestPtr Req, FHttpResponsePtr 
         {
             const FString LogSpecId = TemplateResult.SpecId.IsEmpty() ? TEXT("unnamed spec") : TemplateResult.SpecId;
             AppendLog(FString::Printf(TEXT("BehaviorSpec '%s' generated: header/source %s / %s"), *LogSpecId, *TemplateResult.HeaderPath, *TemplateResult.SourcePath));
-            AppendLog(FString::Printf(TEXT("Blueprint binding plan available at %s"), *TemplateResult.BindingPlanPath));
-            AppendLog(FString::Printf(TEXT("Blueprint manifest recorded at %s"), *TemplateResult.ManifestPath));
+            AppendLog(FString::Printf(TEXT("Saving skeleton header to %s"), *TemplateResult.HeaderPath));
+            AppendLog(FString::Printf(TEXT("Saving skeleton source to %s"), *TemplateResult.SourcePath));
+            AppendLog(FString::Printf(TEXT("Saving binding plan to %s"), *TemplateResult.BindingPlanPath));
+            AppendLog(FString::Printf(TEXT("Saving manifest to %s"), *TemplateResult.ManifestPath));
         }
         else if (!TemplateError.IsEmpty())
         {
