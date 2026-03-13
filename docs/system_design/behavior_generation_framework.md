@@ -58,6 +58,34 @@ Developers can also point tooling at `behavior_spec_example.json` when they need
 
 `AI_Copilot` now drives a `BehaviorTemplateGenerator` inside the plugin. When a BehaviorSpec payload is attached to a Copilot response, the generator writes a `[Class].h`/`.cpp` skeleton, a `_BindingPlan.txt`, and a `_Manifest.txt` into `generated/behavior_templates/`. The binding plan documents the Blueprint inheritance strategy, logs the BehaviorSpec ID, and walks the Blueprint developer through wiring the generated `Execute<Hook>Hook` helpers together with the resource slots listed below. The manifest mirrors those paths and summarizes the resource reservations so reviewers can trace every artifact back to the spec.
 
+#### BehaviorSpec-driven CoPilot contract
+
+The Copilot backend now returns a behavior-spec-first payload for `/api/copilot/generate`. The default response includes:
+
+```json
+{
+  "summary": "Generated sprint ability module",
+  "behavior_spec": { /* canonical BehaviorSpec schema & metadata */ },
+  "binding_plan": {
+    "description": "Blueprint binding plan for Character",
+    "steps": [
+      "Create Blueprint BP_{spec_id} inheriting from the generated actor",
+      "Wire the Execute<Hook>Hook helpers for every BehaviorHook",
+      "Reserve the resource slots listed in the manifest before runtime",
+      "Confirm validation targets align with the manifest hints"
+    ]
+  },
+  "manifest_hint": {
+    "spec_id": "character-ab12",
+    "resource_slots": ["PrimaryWeaponSlot", "MovementRequest", "AnimationMontageQueue"],
+    "behavior_hooks": ["OnSpawn", "OnDamageTaken", "OnObjectiveUpdated"]
+  },
+  "files": [ /* optional stub files for backwards compatibility */ ]
+}
+```
+
+`behavior_spec` is now mandatory; the panel uses it to parse archetype, ResourceSlots, and BehaviorHooks before invoking `BehaviorTemplateGenerator::GenerateSkeleton`. The `binding_plan` and `manifest_hint` entries act as UI-friendly hints while the actual skeleton/manifest writing still happens inside the plugin.
+
 ### Blueprint Binding Hints & Reserved Slots
 
 The resource slots captured in the generated header remain reserved for Blueprint authors and show up as `UPROPERTY` hints in the skeleton, the binding plan, and the manifest:
