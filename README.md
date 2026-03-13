@@ -4,6 +4,7 @@ This workspace organizes AI/Unreal artifacts, verification evidence, and support
 
 ## Top-level directories
 - `generated/behavior_templates` – canonical BehaviorTemplateGenerator output (skeleton `.h`/`.cpp`, binding plans, manifest).
+  When the server or verification scripts run inside this Linux workspace they write to this directory; when the Unreal Editor with AI Copilot is running on Windows it writes to `D:/Unreal Projects/<project>/generated/behavior_templates/`. Reviewers should copy the Windows artifacts back into the Linux path (or vice versa) before packaging the evidence bundle so the repo remains consistent.
 - `archives/behavior_validation` – archival evidence produced by `scripts/verify_behavior.sh` (`generated_code/`, `verification_logs/`, `runtime_metrics/`, `release_notes/`). Treat this as the single source of truth for reviewer artifacts.
 - `logs/verification` – symlink pointing to `archives/behavior_validation/verification_logs` so verification builds are accessible from the logs folder as well.
 - `docs/` – design and verification guidance (`system_design/behavior_generation_framework.md`, `verification/behavior_validation.md`, etc.).
