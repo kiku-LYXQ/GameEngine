@@ -145,7 +145,7 @@ bool FBehaviorTemplateGenerator::TryParseBehaviorSpec(const TSharedPtr<FJsonObje
 
 FString FBehaviorTemplateGenerator::GetOutputDirectory()
 {
-    return FPaths::Combine(FPaths::ProjectDir(), TEXT("GeneratedBehaviorTemplates"));
+    return FPaths::Combine(FPaths::ProjectDir(), TEXT("generated"), TEXT("behavior_templates"));
 }
 
 bool FBehaviorTemplateGenerator::GenerateSkeleton(const FBehaviorSpecDefinition& Spec, FBehaviorTemplateGenerationResult& OutResult)
