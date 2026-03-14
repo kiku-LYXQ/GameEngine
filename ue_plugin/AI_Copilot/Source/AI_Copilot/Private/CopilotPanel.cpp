@@ -583,8 +583,8 @@ FReply SCopilotPanel::OnSendPromptClicked()
     Root->SetStringField(TEXT("schema"), TEXT("code"));
     TSharedPtr<FJsonObject> Context = MakeShared<FJsonObject>();
     Context->SetStringField(TEXT("chunk_id"), SelectedChunkId);
-    Context->SetBoolField(TEXT("use_llm"), bUseLLMBehaviorSpec);
     Root->SetObjectField(TEXT("context"), Context);
+    Root->SetBoolField(TEXT("use_llm"), bUseLLMBehaviorSpec);
 
     FString Content;
     TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Content);
