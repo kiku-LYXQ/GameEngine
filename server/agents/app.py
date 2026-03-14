@@ -196,7 +196,8 @@ def _build_manifest_hint(spec: BehaviorSpec, spec_id: str) -> CopilotManifestHin
 def copilot_generate(payload: CopilotGenerateRequest) -> CopilotGenerateResponse:
     archetype = _resolve_behavior_archetype(payload.context)
     generator = BehaviorSpecGenerator()
-    spec = generator.generate(archetype, use_llm=False)
+    logger.info("Copilot generate request use_llm=%s archetype=%s", payload.use_llm, archetype.value)
+    spec = generator.generate(archetype, use_llm=payload.use_llm)
     spec_id = payload.context.get("spec_id") or f"{archetype.value}-{uuid4().hex[:6]}"
     binding_plan = _build_binding_plan(spec, spec_id)
     manifest_hint = _build_manifest_hint(spec, spec_id)

@@ -89,6 +89,7 @@ class CopilotGenerateRequest(BaseModel):
     context: Dict[str, str]
     schema: str = "code"
     max_tokens: int = 512
+    use_llm: bool = False
 
 
 class CopilotBindingPlan(BaseModel):
