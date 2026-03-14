@@ -537,23 +537,25 @@ TSharedRef<ITableRow> SCopilotPanel::OnGenerateCopilotFileRow(TSharedPtr<FString
 
 void SCopilotPanel::LoadUseLLMSetting()
 {
-    const TCHAR* ConfigIni = GGameUserSettingsIni;
-#if WITH_EDITOR
-    ConfigIni = GEditorPerProjectUserSettingsIni;
-#endif
+    const FString ConfigIni = GGameUserSettingsIni;
+
     bool bValue = false;
-    GConfig->GetBool(CopilotConfigSection, UseLLMKey, bValue, ConfigIni);
+    if (GConfig)
+    {
+        GConfig->GetBool(CopilotConfigSection, UseLLMKey, bValue, ConfigIni);
+    }
     bUseLLMBehaviorSpec = bValue;
 }
 
 void SCopilotPanel::SaveUseLLMSetting() const
 {
-    const TCHAR* ConfigIni = GGameUserSettingsIni;
-#if WITH_EDITOR
-    ConfigIni = GEditorPerProjectUserSettingsIni;
-#endif
-    GConfig->SetBool(CopilotConfigSection, UseLLMKey, bUseLLMBehaviorSpec, ConfigIni);
-    GConfig->Flush(false, ConfigIni);
+    const FString ConfigIni = GGameUserSettingsIni;
+
+    if (GConfig)
+    {
+        GConfig->SetBool(CopilotConfigSection, UseLLMKey, bUseLLMBehaviorSpec, ConfigIni);
+        GConfig->Flush(false, ConfigIni);
+    }
 }
 
 ECheckBoxState SCopilotPanel::GetUseLLMCheckState() const
