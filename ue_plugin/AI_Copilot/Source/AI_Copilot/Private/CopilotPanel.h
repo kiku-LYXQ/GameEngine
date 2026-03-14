@@ -7,6 +7,7 @@
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/Input/SEditableTextBox.h"
+#include "Widgets/Input/SCheckBox.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Views/SListView.h"
 
@@ -47,6 +48,10 @@ private:
     TSharedRef<ITableRow> OnGenerateCopilotFileRow(TSharedPtr<FString> Item, const TSharedRef<STableViewBase>& OwnerTable) const;
 
     void HandleCopilotResponse(FHttpRequestPtr Req, FHttpResponsePtr Resp, bool bSuccess);
+    void LoadUseLLMSetting();
+    void SaveUseLLMSetting() const;
+    ECheckBoxState GetUseLLMCheckState() const;
+    void OnUseLLMChanged(ECheckBoxState NewState);
 
     FReply OnSendPromptClicked();
     FReply OnResourceCardClicked(FString ChunkPath, FString ChunkId);
@@ -64,4 +69,6 @@ private:
     TArray<TSharedPtr<FString>> LogEntries;
     TArray<TSharedPtr<FString>> BehaviorEntries;
     TArray<TSharedPtr<FString>> CopilotFileEntries;
+    TSharedPtr<SCheckBox> UseLLMCheckBox;
+    bool bUseLLMBehaviorSpec = false;
 };

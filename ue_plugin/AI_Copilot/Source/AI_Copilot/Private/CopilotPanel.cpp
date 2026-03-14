@@ -7,6 +7,7 @@
 #include "Interfaces/IHttpResponse.h"
 
 #include "Async/Async.h"
+#include "Misc/ConfigCacheIni.h"
 #include "Dom/JsonObject.h"
 #include "Json.h"
 #include "Logging/LogMacros.h"
@@ -16,6 +17,7 @@
 #include "Styling/CoreStyle.h"
 
 #include "Widgets/Input/SEditableTextBox.h"
+#include "Widgets/Input/SCheckBox.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SScrollBox.h"
@@ -24,6 +26,8 @@
 #include "Widgets/Layout/SSeparator.h"
 #include "Widgets/Layout/SExpandableArea.h"
 #include "Widgets/Layout/SBox.h"
+#include "Widgets/Layout/SVerticalBox.h"
+#include "Widgets/Layout/SHorizontalBox.h"
 #include "Widgets/Notifications/SProgressBar.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Views/STableRow.h"
@@ -33,10 +37,18 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogCopilotPanel, Log, All);
 
+namespace
+{
+    constexpr const TCHAR* CopilotConfigSection = TEXT("/Script/AI_Copilot.CopilotPanelSettings");
+    constexpr const TCHAR* UseLLMKey = TEXT("bUseLLMBehaviorSpec");
+}
+
 void SCopilotPanel::Construct(const FArguments& InArgs)
 {
     const TArray<FString> Templates = {TEXT("Sprint Ability"), TEXT("Burst Damage"), TEXT("AI Patrol"), TEXT("Dialogue Event")};
     const TArray<FString> Resources = {TEXT("Content/VFX/explosion_fx"), TEXT("Blueprints/BP_Player"), TEXT("Materials/M_Spirit"), TEXT("Sound/Ability/impact")};
+
+    LoadUseLLMSetting();
 
     SelectedChunkId = TEXT("chunk-001");
 
@@ -100,6 +112,17 @@ void SCopilotPanel::Construct(const FArguments& InArgs)
                         SNew(STextBlock)
                         .Text(FText::FromString(TEXT("Chunk follow-up: select a chunk and it auto-appends to the prompt.")))
                         .AutoWrapText(true)
+                    ]
+                    + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(12, 0, 0, 0)
+                    [
+                        SAssignNew(UseLLMCheckBox, SCheckBox)
+                        .IsChecked(this, &SCopilotPanel::GetUseLLMCheckState)
+                        .OnCheckStateChanged(this, &SCopilotPanel::OnUseLLMChanged)
+                        .Content()
+                        [
+                            SNew(STextBlock)
+                            .Text(FText::FromString(TEXT("Use LLM BehaviorSpec")))
+                        ]
                     ]
                 ]
 
@@ -514,6 +537,31 @@ TSharedRef<ITableRow> SCopilotPanel::OnGenerateCopilotFileRow(TSharedPtr<FString
     ];
 }
 
+void SCopilotPanel::LoadUseLLMSetting()
+{
+    bool bValue = false;
+    GConfig->GetBool(CopilotConfigSection, UseLLMKey, bValue, GEditorPerProjectUserSettingsIni);
+    bUseLLMBehaviorSpec = bValue;
+}
+
+void SCopilotPanel::SaveUseLLMSetting() const
+{
+    GConfig->SetBool(CopilotConfigSection, UseLLMKey, bUseLLMBehaviorSpec, GEditorPerProjectUserSettingsIni);
+    GConfig->Flush(false, GEditorPerProjectUserSettingsIni);
+}
+
+ECheckBoxState SCopilotPanel::GetUseLLMCheckState() const
+{
+    return bUseLLMBehaviorSpec ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
+}
+
+void SCopilotPanel::OnUseLLMChanged(ECheckBoxState NewState)
+{
+    bUseLLMBehaviorSpec = NewState == ECheckBoxState::Checked;
+    SaveUseLLMSetting();
+    AppendLog(FString::Printf(TEXT("Use LLM BehaviorSpec %s"), bUseLLMBehaviorSpec ? TEXT("enabled") : TEXT("disabled")));
+}
+
 FReply SCopilotPanel::OnSendPromptClicked()
 {
     if (!PromptInput.IsValid())
@@ -527,6 +575,7 @@ FReply SCopilotPanel::OnSendPromptClicked()
     Root->SetStringField(TEXT("schema"), TEXT("code"));
     TSharedPtr<FJsonObject> Context = MakeShared<FJsonObject>();
     Context->SetStringField(TEXT("chunk_id"), SelectedChunkId);
+    Context->SetBoolField(TEXT("use_llm"), bUseLLMBehaviorSpec);
     Root->SetObjectField(TEXT("context"), Context);
 
     FString Content;
@@ -541,7 +590,7 @@ FReply SCopilotPanel::OnSendPromptClicked()
     Request->OnProcessRequestComplete().BindSP(this, &SCopilotPanel::HandleCopilotResponse);
     Request->ProcessRequest();
 
-    AppendLog(FString::Printf(TEXT("Sent copilot prompt (chunk %s)"), *SelectedChunkId));
+    AppendLog(FString::Printf(TEXT("Sent copilot prompt (chunk %s) [use_llm=%s]"), *SelectedChunkId, bUseLLMBehaviorSpec ? TEXT("true") : TEXT("false")));
     return FReply::Handled();
 }
 
