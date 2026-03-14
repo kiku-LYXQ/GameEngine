@@ -12,7 +12,7 @@ The BehaviorSpec archetype schema codifies how runtime dashboards, production be
 | **BehaviorHooks** | Named lifecycle callbacks (OnSpawn, OnInteract, OnDestroyed, etc.) paired with the narrative/logic intent executed at each hook. |
 | **ResourceSlots** | Slots reserved for assets or contextual data (primary weapon, animation montages, audio cues, sequencer bindings, etc.). |
 | **ValidationTargets** | Asset/test suites gated on this archetype (behavior trees, regression suites, navigation bundles, audio mixes). |
-| **Metadata** | Free-form key/value pairs (domain, owner, pipeline stage, stability, etc.) used for routing, alerting, and ownership tracking.
+| **Metadata** | Free-form key/value pairs (domain, owner, pipeline stage, stability, etc.) used for routing, alerting, and ownership tracking. Metadata now also surface `generation_mode` (e.g., `curated` vs `llm_assisted`) and a boolean `llm_ready` flag so downstream reviewers can quickly know whether the toggle or payload included an LLM contribution.
 
 The schema is implemented via `BehaviorSpec` (Pydantic) inside `server/agents/behavior_spec.py`. That module also defines `BehaviorArchetype` and the curated payloads that back every archetype. `BehaviorSpecGenerator` lives next door in `server/agents/behavior_spec_generator.py`; it builds the canonical prompt, validates JSON, and exposes `GET /agents/behavior-spec/{archetype}` so every agent or tool can fetch production-ready JSON that wires straight into the behavior pipeline.
 
@@ -99,6 +99,28 @@ The resource slots captured in the generated header remain reserved for Blueprin
 - **BlueprintClassSlot (`TSubclassOf<AActor>`)** – reserved for injecting optional Blueprint/actor subclasses, letting the manifest cite `OptionalBlueprintClass` when a variant or decorator is desired.
 
 Each BehaviorHook section in the plan repeats how to call `Execute<Hook>Hook`, which Blueprint event to map, and which of the slots above should be set before or during that hook’s execution.
+
+### Copilot UI toggle & use_llm runtime flag
+
+The Copilot Panel now exposes a `Use LLM-generated BehaviorSpec` toggle (default: off) next to the `Generate Behavior Template` button. Turning it on appends `use_llm=true` to every BehaviorSpec request and tells the backend generator to hit the LLM runtime defined by `BEHAVIOR_SPEC_LLM_ENDPOINT`. The toggle state is persisted in `generated/behavior_templates/behavior_generation_state.json` so reviewers can confirm whether a recent template was LLM-assisted.
+
+Start the runtime locally with:
+
+```bash
+BEHAVIOR_SPEC_LLM_ENDPOINT=https://free.v36.cm LLM_MODEL=game-qwen-7b uvicorn server.llm_runtime.app:app --port 7001 --host 127.0.0.1
+```
+
+You can replace `BEHAVIOR_SPEC_LLM_ENDPOINT` with your own hosted model endpoint. The LLM runtime publishes metrics at `/metrics`, so make sure `server.llm_runtime` is running on port `7001` before enabling the toggle.
+
+The panel and verification scripts mirror the toggle by issuing requests like:
+
+```bash
+curl http://127.0.0.1:7000/api/copilot/generate \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"Generate a sprint ability", "use_llm":true}'
+```
+
+`scripts/verify_all.sh` now records this command’s output (with `use_llm=true`) in `archives/behavior_validation/verification_logs/use_llm_toggle.json`, along with the usual `behavior_spec_api.json` snapshot, to show when the toggle was active during validation.
 
 ### Verification via Copilot Panel
 

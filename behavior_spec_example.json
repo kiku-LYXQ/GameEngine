@@ -32,7 +32,9 @@
       "domain": "npc",
       "pipeline_stage": "production",
       "owner": "gameplay-ai",
-      "stability": "high"
+      "stability": "high",
+      "generation_mode": "curated",
+      "llm_ready": false
     }
   },
   "breakable_prop": {
@@ -64,7 +66,9 @@
       "domain": "props",
       "pipeline_stage": "playtest",
       "owner": "props-team",
-      "stability": "medium"
+      "stability": "medium",
+      "generation_mode": "curated",
+      "llm_ready": false
     }
   },
   "interactable_prop": {
@@ -97,7 +101,9 @@
       "domain": "props",
       "pipeline_stage": "production",
       "owner": "props-team",
-      "stability": "high"
+      "stability": "high",
+      "generation_mode": "curated",
+      "llm_ready": false
     }
   },
   "generic_actor": {
@@ -129,7 +135,9 @@
       "domain": "utility",
       "pipeline_stage": "production",
       "owner": "engine",
-      "stability": "stable"
+      "stability": "stable",
+      "generation_mode": "curated",
+      "llm_ready": false
     }
   }
 }
